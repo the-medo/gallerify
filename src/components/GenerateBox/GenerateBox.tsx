@@ -1,4 +1,4 @@
-import React, { CSSProperties, useMemo, useState } from 'react';
+import React, { CSSProperties, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -11,8 +11,10 @@ import {
   Slider,
   Text,
 } from '@radix-ui/themes';
+import { useStore } from '../../store/store.ts';
+import { UpdateIcon } from '@radix-ui/react-icons';
 
-interface BoxPosition {
+export interface BoxPosition {
   left: LayoutProps['left'];
   top: LayoutProps['top'];
   css?: CSSProperties;
@@ -20,16 +22,17 @@ interface BoxPosition {
 
 interface GenerateBoxProps {}
 
-const DEFAULT_STEP = 5;
-const DEFAULT_WIDTH = 15;
-const DEFAULT_HEIGHT = 15;
-
 const GenerateBox: React.FC<GenerateBoxProps> = () => {
-  const [generated, setGenerated] = useState(false);
-  const [step, setStep] = useState(DEFAULT_STEP);
-  const [width, setWidth] = useState(DEFAULT_WIDTH);
-  const [height, setHeight] = useState(DEFAULT_HEIGHT);
-  const [maxSize, setMaxSize] = useState(50);
+  const generated = useStore((state) => state.generated);
+  const stepSize = useStore((state) => state.stepSize);
+  const width = useStore((state) => state.width);
+  const height = useStore((state) => state.height);
+  const maxSize = useStore((state) => state.maxSize);
+
+  const setStepSize = useStore((state) => state.setStepSize);
+  const setWidth = useStore((state) => state.setWidth);
+  const setHeight = useStore((state) => state.setHeight);
+  const setGenerated = useStore((state) => state.setGenerated);
 
   const boxPosition: BoxPosition = useMemo(() => {
     if (generated) {
@@ -42,23 +45,12 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
         left: '50%',
         top: '50%',
         css: {
-          translate: '-50% -50%',
-          scale: '1.5',
+          translate: '-50% -75%',
+          scale: '1.1',
         },
       };
     }
   }, [generated]);
-
-  const generateHandler = () => setGenerated(true);
-
-  const onStepChange = (x: number[]) => {
-    setStep(x[0]);
-    setWidth((w) => Math.round(w / x[0]) * x[0]);
-    setHeight((w) => Math.round(w / x[0]) * x[0]);
-    setMaxSize((w) => Math.round(w / x[0]) * x[0]);
-  };
-  const onWidthChange = (x: number[]) => setWidth(x[0]);
-  const onHeightChange = (x: number[]) => setHeight(x[0]);
 
   return (
     <Box
@@ -84,16 +76,10 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
             <Box width="max-content">
               <Text align="right">Step size:</Text>
             </Box>
-            <Slider
-              onValueChange={onStepChange}
-              step={1}
-              defaultValue={[DEFAULT_STEP]}
-              min={2}
-              max={10}
-            />
+            <Slider onValueChange={setStepSize} step={1} value={[stepSize]} min={2} max={10} />
             {/*<TextField.Input size="2" value={3} placeholder="Search the docs…" />*/}
             <Box width="max-content">
-              <Text align="left">{step} meters</Text>
+              <Text align="left">{stepSize} meters</Text>
             </Box>
 
             <Separator style={{ gridColumnStart: 1, gridColumnEnd: 4 }} my="3" size="4" />
@@ -102,12 +88,11 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
               <Text align="right">Width:</Text>
             </Box>
             <Slider
-              onValueChange={onWidthChange}
+              onValueChange={setWidth}
               value={[width]}
-              step={step}
-              min={step * 2}
+              step={stepSize}
+              min={stepSize * 2}
               max={maxSize}
-              defaultValue={[DEFAULT_WIDTH]}
             />
             <Box width="max-content">
               <Text align="left">{width} meters</Text>
@@ -117,18 +102,20 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
               <Text align="right">Height:</Text>
             </Box>
             <Slider
-              onValueChange={onHeightChange}
+              onValueChange={setHeight}
               value={[height]}
-              step={step}
-              min={step * 2}
+              step={stepSize}
+              min={stepSize * 2}
               max={maxSize}
-              defaultValue={[DEFAULT_HEIGHT]}
             />
             <Box width="max-content">
               <Text align="left">{height} meters</Text>
             </Box>
           </Grid>
-          <Button onClick={generateHandler}>Generate</Button>
+          <Button onClick={setGenerated}>
+            <UpdateIcon />
+            Generate
+          </Button>
         </Flex>
       </Card>
     </Box>
