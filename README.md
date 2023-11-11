@@ -1,3 +1,8 @@
+Color schemes:
+
+https://www.realtimecolors.com/?colors=081609-f8fcf8-302c77-d6f0d7-b64943&fonts=Poppins-Poppins
+
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

@@ -1,0 +1,18 @@
+body {
+    /*background-color: var(--lime-2) !important;*/
+}
+
+.radix-themes {
+    /*--default-font-family: var(--font-inter);*/
+    --heading-font-family: 'Cabin Sketch', 'Montserrat', sans-serif;
+
+    [data-header="true"] {
+        font-size: 120px;
+        transition: 0.2s ease-in;
+
+        &:hover {
+            font-size: 130px;
+        }
+    }
+}
+

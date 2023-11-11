@@ -1,0 +1,20 @@
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "printWidth": 100,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "singleQuote": true,
+  "jsxSingleQuote": false,
+  "bracketSpacing": true,
+  "jsxBracketSameLine": false,
+  "overrides": [
+    {
+      "files": "*.mdx",
+      "options": {
+        "parser": "mdx"
+      }
+    }
+  ]
+}

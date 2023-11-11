@@ -1,0 +1,11 @@
+node_modules
+.next/
+public/
+out/
+.git/
+dist/
+*.config.js
+
+
+# yarn v3
+.yarn
