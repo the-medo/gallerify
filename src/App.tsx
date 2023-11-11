@@ -6,7 +6,7 @@ import Preview from './components/Preview/Preview.tsx';
 
 function App() {
   return (
-    <Theme appearance="light" accentColor="iris" radius="full">
+    <Theme appearance="light" accentColor="brown" radius="full">
       <Background />
       <Header />
       <GenerateBox />
