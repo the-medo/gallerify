@@ -1,14 +1,14 @@
 import React, { useCallback } from 'react';
 import { Graphics } from '@pixi/react';
 import { Graphics as PixiGraphics } from '@pixi/graphics';
-import { TWall } from '../../compute/types.ts';
-import { useStore } from '../../store/store.ts';
+import { TWall } from '../../../compute/types.ts';
+import { useStore } from '../../../store/store.ts';
 
-interface WallProps {
+interface Wall2dProps {
   wall: TWall;
 }
 
-const Wall: React.FC<WallProps> = ({ wall }) => {
+const Wall2d: React.FC<Wall2dProps> = ({ wall }) => {
   const squareSize = useStore((state) => state.squareSize);
 
   const draw = useCallback(
@@ -26,4 +26,4 @@ const Wall: React.FC<WallProps> = ({ wall }) => {
   return <Graphics draw={draw} />;
 };
 
-export default Wall;
+export default Wall2d;

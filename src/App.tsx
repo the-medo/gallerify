@@ -5,6 +5,7 @@ import GenerateBox from './components/GenerateBox/GenerateBox.tsx';
 import Preview from './components/Preview/Preview.tsx';
 import { useEffect } from 'react';
 import { useStore } from './store/store.ts';
+import Turn3dBox from './components/GenerateBox/Turn3dBox.tsx';
 
 function App() {
   const setWindowWidth = useStore((state) => state.setWindowWidth);
@@ -28,10 +29,12 @@ function App() {
         align={{ initial: 'center', md: 'center' }}
         justify={{ initial: 'center', md: 'start' }}
         grow={'1'}
+        gap={'4'}
       >
-        <Flex direction={'column'}>
+        <Flex direction={'column'} gap={'8'}>
           <Header />
           <GenerateBox />
+          <Turn3dBox />
         </Flex>
         <Box>
           <Preview />

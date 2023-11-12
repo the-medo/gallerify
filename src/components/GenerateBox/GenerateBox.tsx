@@ -34,7 +34,7 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
   const handleGenerate = useStore((state) => state.handleGenerate);
 
   return (
-    <Box width="max-content" p={'8'}>
+    <Box width="100%" px={'8'}>
       <Card style={{ height: '100%' }}>
         <Flex p={'3'} display={'flex'} gap={'3'} direction={'column'}>
           <Grid

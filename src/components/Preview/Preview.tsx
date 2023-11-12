@@ -1,17 +1,17 @@
 import React from 'react';
 import { Box } from '@radix-ui/themes';
 import { useStore } from '../../store/store.ts';
-import { Stage } from '@pixi/react';
-import Base from '../Canvas/Base.tsx';
-import RoomLayout from '../Canvas/RoomLayout.tsx';
+import Preview2d from './Preview2d.tsx';
+import Preview3d from './Preview3d.tsx';
 
 interface PreviewProps {}
 
 const Preview: React.FC<PreviewProps> = () => {
+  const previewMode = useStore((state) => state.previewMode);
+
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
   const squareSize = useStore((state) => state.squareSize);
-  const roomLayout = useStore((state) => state.roomLayout);
 
   return (
     <Box p="3">
@@ -22,14 +22,8 @@ const Preview: React.FC<PreviewProps> = () => {
           border: '5px solid var(--accent-11)',
         }}
       >
-        <Stage
-          width={width * squareSize}
-          height={height * squareSize}
-          options={{ backgroundColor: 0xffffff }}
-        >
-          <Base />
-          {roomLayout && <RoomLayout roomLayout={roomLayout} />}
-        </Stage>
+        {previewMode === '2d' && <Preview2d />}
+        {previewMode === '3d' && <Preview3d />}
       </Box>
     </Box>
   );

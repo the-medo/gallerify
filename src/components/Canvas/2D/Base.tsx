@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { useStore } from '../../store/store.ts';
-import { createBase } from '../../compute/createBase.ts';
+import { useStore } from '../../../store/store.ts';
+import { createBase } from '../../../compute/createBase.ts';
 import Line from './Line.tsx';
 import Point from './Point.tsx';
 

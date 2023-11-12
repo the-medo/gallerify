@@ -6,8 +6,11 @@ const DEFAULT_STEP = 3;
 const DEFAULT_WIDTH = 12;
 const DEFAULT_HEIGHT = 9;
 
+type PreviewMode = '2d' | '3d';
+
 type State = {
   generated: boolean;
+  previewMode: PreviewMode;
   stepSize: number;
   width: number;
   height: number;
@@ -18,6 +21,7 @@ type State = {
 };
 
 type Actions = {
+  setPreviewMode: (mode: PreviewMode) => void;
   setStepSize: (sliderInput: number[]) => void;
   setWidth: (sliderInput: number[]) => void;
   setHeight: (sliderInput: number[]) => void;
@@ -33,6 +37,7 @@ const computeDimension = (dimension: number, stepSize: number) =>
 
 export const useStore = create<State & Actions>((set) => ({
   generated: false,
+  previewMode: '2d',
   stepSize: DEFAULT_STEP,
   width: DEFAULT_WIDTH,
   height: DEFAULT_HEIGHT,
@@ -40,6 +45,9 @@ export const useStore = create<State & Actions>((set) => ({
   roomLayout: undefined,
   windowWidth: 1920,
   squareSize: DEFAULT_POINT_SIZE,
+
+  setPreviewMode: (mode: PreviewMode) => set(() => ({ previewMode: mode })),
+
   setStepSize: (sliderInput: number[]) =>
     set((state) => {
       const width = computeDimension(state.width, sliderInput[0]);
@@ -54,17 +62,20 @@ export const useStore = create<State & Actions>((set) => ({
         squareSize: computeSquareSize(width, state.windowWidth),
       };
     }),
+
   setWidth: (sliderInput: number[]) =>
     set((state) => ({
       width: sliderInput[0],
       squareSize: computeSquareSize(sliderInput[0], state.windowWidth),
     })),
   setHeight: (sliderInput: number[]) => set(() => ({ height: sliderInput[0] })),
+
   setWindowWidth: (width: number) =>
     set((state) => ({
       windowWidth: width,
       squareSize: computeSquareSize(state.width, width),
     })),
+
   handleGenerate: () =>
     set((state) => ({
       generated: true,
