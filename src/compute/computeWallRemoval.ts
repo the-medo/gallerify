@@ -10,7 +10,7 @@
   e. merge rooms
 
  */
-import { getCommonWalls, removeWallAndMergeRooms, TRoomLayout, wallKey } from './types.ts';
+import { getCommonWalls, removeWallAndMergeRooms, TRoomLayout } from './types.ts';
 import { createRoomLayout, CreateRoomLayoutProps } from './createRoomLayout.ts';
 
 export interface ComputeWallRemovalProps extends CreateRoomLayoutProps {
@@ -21,7 +21,7 @@ export function computeWallRemoval({
   stepSize,
   width,
   height,
-  seed = 366796,
+  seed,
 }: ComputeWallRemovalProps): [TRoomLayout, number] {
   if (!seed) seed = Math.ceil(Math.random() * 1000000);
   console.log('SEED: ' + seed);
@@ -30,45 +30,22 @@ export function computeWallRemoval({
 
   let roomKeys = Object.keys(roomLayout.rooms);
 
-  let i = 0;
-  try {
-    while (roomKeys.length > 1) {
-      i++;
+  while (roomKeys.length > 1) {
+    // select random room, based on seed
+    const roomKey = roomKeys[seed % roomKeys.length];
+    const room = roomLayout.rooms[roomKey];
 
-      // select random room, based on seed
-      const roomKey = roomKeys[seed % roomKeys.length];
-      const room = roomLayout.rooms[roomKey];
+    // select random neighbor, based on seed
+    const neighbor = room.neighbors[seed % room.neighbors.length];
 
-      // select random neighbor, based on seed
-      const neighbor = room.neighbors[seed % room.neighbors.length];
+    // select random common wall, based on seed
+    const commonWalls = getCommonWalls(room, neighbor);
 
-      // console.log('Iteration: ' + i, 'Room: ' + roomKey, room, 'Neighbor: ', neighbor);
+    const wall = commonWalls[seed % commonWalls.length];
+    removeWallAndMergeRooms(room, neighbor, wall, roomLayout.rooms);
 
-      // select random common wall, based on seed
-      const commonWalls = getCommonWalls(room, neighbor);
-      // console.log('Common walls: ', commonWalls);
-
-      const wall = commonWalls[seed % commonWalls.length];
-      if (i === 1) {
-        console.log('Room key: ', roomKey, 'Neighbor', neighbor.id);
-        console.log('Common walls: ', commonWalls);
-        console.log('BREAK ROOM LAYOUT: ', roomLayout);
-        // break;
-      }
-
-      if (wall) {
-        // remove wall + merge rooms
-        removeWallAndMergeRooms(room, neighbor, wall, roomLayout.rooms);
-      } else {
-        console.log('NO WALL FOUND');
-      }
-
-      // remove neighbor from keys
-      roomKeys = Object.keys(roomLayout.rooms);
-      // roomKeys.splice(roomKeys.indexOf(neighbor.id), 1);
-    }
-  } catch (e) {
-    console.log('ERROR ROOM LAYOUT: ', roomLayout);
+    // remove neighbor from keys
+    roomKeys = Object.keys(roomLayout.rooms);
   }
 
   return [roomLayout, seed];

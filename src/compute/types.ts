@@ -91,21 +91,18 @@ export const mergeRooms = (r1: TRoom, r2: TRoom, rooms: RoomMap) => {
     }
   });
 
+  r2.neighbors = r2.neighbors.filter((neighbor) => neighbor.id !== r1.id);
+
   r2.neighbors.forEach((r2Neighbor) => {
-    // if (n.id !== r1.id) {
-    if (
-      r2Neighbor.id !== r1.id &&
-      !r1.neighbors.some((r1Neighbor) => r2Neighbor.id === r1Neighbor.id)
-    ) {
+    if (!r1.neighbors.some((r1Neighbor) => r2Neighbor.id === r1Neighbor.id)) {
       r1.neighbors.push(r2Neighbor);
-      r2Neighbor.neighbors = r2Neighbor.neighbors.filter(
-        (otherNeighbor) => otherNeighbor.id !== r2.id,
-      );
-      if (!r2Neighbor.neighbors.some((otherNeighbor) => r1.id === otherNeighbor.id)) {
-        r2Neighbor.neighbors.push(r1);
-      }
     }
-    // }
+    r2Neighbor.neighbors = r2Neighbor.neighbors.filter(
+      (otherNeighbor) => otherNeighbor.id !== r2.id,
+    );
+    if (!r2Neighbor.neighbors.some((otherNeighbor) => r1.id === otherNeighbor.id)) {
+      r2Neighbor.neighbors.push(r1);
+    }
   });
 
   //remove r2 from r1 neighbors
@@ -116,6 +113,7 @@ export const mergeRooms = (r1: TRoom, r2: TRoom, rooms: RoomMap) => {
 };
 
 export const removeWallAndMergeRooms = (r1: TRoom, r2: TRoom, wall: TWall, rooms: RoomMap) => {
+  console.log('removeWallAndMergeRooms', r1, r2, wall, rooms);
   rooms[r1.id].walls = r1.walls.filter((otherWall) => wallKey(wall) !== wallKey(otherWall));
   rooms[r2.id].walls = r2.walls.filter((otherWall) => wallKey(wall) !== wallKey(otherWall));
   mergeRooms(r1, r2, rooms);
