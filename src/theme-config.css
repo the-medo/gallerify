@@ -8,10 +8,19 @@ body {
 
     [data-header="true"] {
         font-size: 120px;
+        color: var(--accent-12);
+
+        @media (max-width: 1024px) {
+            font-size: 96px;
+        }
+        @media (max-width: 500px) {
+            font-size: 80px;
+        }
+
         transition: 0.2s ease-in;
 
         &:hover {
-            font-size: 130px;
+            color: var(--accent-11);
         }
     }
 }

@@ -1,11 +1,10 @@
 import { create } from 'zustand';
-import { TRoomLayout } from '../compute/types.ts';
-import { createRoomLayout } from '../compute/createRoomLayout.ts';
+import { DEFAULT_POINT_SIZE, TRoomLayout } from '../compute/types.ts';
 import { computeWallRemoval } from '../compute/computeWallRemoval.ts';
 
-const DEFAULT_STEP = 5;
-const DEFAULT_WIDTH = 30;
-const DEFAULT_HEIGHT = 15;
+const DEFAULT_STEP = 3;
+const DEFAULT_WIDTH = 12;
+const DEFAULT_HEIGHT = 9;
 
 type State = {
   generated: boolean;
@@ -13,6 +12,8 @@ type State = {
   width: number;
   height: number;
   maxSize: number;
+  windowWidth: number;
+  squareSize: number;
   roomLayout: TRoomLayout | undefined;
 };
 
@@ -20,25 +21,50 @@ type Actions = {
   setStepSize: (sliderInput: number[]) => void;
   setWidth: (sliderInput: number[]) => void;
   setHeight: (sliderInput: number[]) => void;
+  setWindowWidth: (width: number) => void;
   handleGenerate: () => void;
 };
+
+const computeSquareSize = (width: number, windowWidth: number) =>
+  Math.round((windowWidth - (windowWidth > 1024 ? windowWidth / 1.5 : windowWidth / 2)) / width);
+
+const computeDimension = (dimension: number, stepSize: number) =>
+  Math.round(dimension / stepSize) * stepSize;
 
 export const useStore = create<State & Actions>((set) => ({
   generated: false,
   stepSize: DEFAULT_STEP,
   width: DEFAULT_WIDTH,
   height: DEFAULT_HEIGHT,
-  maxSize: 50,
+  maxSize: 30,
   roomLayout: undefined,
+  windowWidth: 1920,
+  squareSize: DEFAULT_POINT_SIZE,
   setStepSize: (sliderInput: number[]) =>
+    set((state) => {
+      const width = computeDimension(state.width, sliderInput[0]);
+      const height = computeDimension(state.height, sliderInput[0]);
+      const maxSize = computeDimension(state.maxSize, sliderInput[0]);
+
+      return {
+        stepSize: sliderInput[0],
+        width,
+        height,
+        maxSize,
+        squareSize: computeSquareSize(width, state.windowWidth),
+      };
+    }),
+  setWidth: (sliderInput: number[]) =>
     set((state) => ({
-      stepSize: sliderInput[0],
-      width: Math.round(state.width / sliderInput[0]) * sliderInput[0],
-      height: Math.round(state.height / sliderInput[0]) * sliderInput[0],
-      maxSize: Math.round(state.maxSize / sliderInput[0]) * sliderInput[0],
+      width: sliderInput[0],
+      squareSize: computeSquareSize(sliderInput[0], state.windowWidth),
     })),
-  setWidth: (sliderInput: number[]) => set(() => ({ width: sliderInput[0] })),
   setHeight: (sliderInput: number[]) => set(() => ({ height: sliderInput[0] })),
+  setWindowWidth: (width: number) =>
+    set((state) => ({
+      windowWidth: width,
+      squareSize: computeSquareSize(state.width, width),
+    })),
   handleGenerate: () =>
     set((state) => ({
       generated: true,

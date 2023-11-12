@@ -1,4 +1,4 @@
-import React, { CSSProperties, useMemo } from 'react';
+import React, { CSSProperties } from 'react';
 import {
   Box,
   Button,
@@ -23,7 +23,6 @@ export interface BoxPosition {
 interface GenerateBoxProps {}
 
 const GenerateBox: React.FC<GenerateBoxProps> = () => {
-  const generated = useStore((state) => state.generated);
   const stepSize = useStore((state) => state.stepSize);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
@@ -34,50 +33,23 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
   const setHeight = useStore((state) => state.setHeight);
   const handleGenerate = useStore((state) => state.handleGenerate);
 
-  const boxPosition: BoxPosition = useMemo(() => {
-    if (generated) {
-      return {
-        left: '0',
-        top: '0',
-      };
-    } else {
-      return {
-        left: '50%',
-        top: '50%',
-        css: {
-          translate: '-50% -75%',
-          scale: '1.1',
-        },
-      };
-    }
-  }, [generated]);
-
   return (
-    <Box
-      position={'fixed'}
-      left={boxPosition.left}
-      top={boxPosition.top}
-      style={{ transition: '0.2s ease-in', ...boxPosition.css }}
-      p={'9'}
-    >
+    <Box width="max-content" p={'8'}>
       <Card style={{ height: '100%' }}>
         <Flex p={'3'} display={'flex'} gap={'3'} direction={'column'}>
-          {/*<Heading size="8">Gallery layout</Heading>*/}
-
           <Grid
             columns="3"
             gap="3"
             align="center"
             justify="end"
             style={{
-              gridTemplateColumns: 'auto 200px auto',
+              gridTemplateColumns: 'auto 150px auto',
             }}
           >
             <Box width="max-content">
               <Text align="right">Step size:</Text>
             </Box>
             <Slider onValueChange={setStepSize} step={1} value={[stepSize]} min={2} max={10} />
-            {/*<TextField.Input size="2" value={3} placeholder="Search the docs…" />*/}
             <Box width="max-content">
               <Text align="left">{stepSize} meters</Text>
             </Box>
