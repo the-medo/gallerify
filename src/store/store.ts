@@ -1,4 +1,7 @@
 import { create } from 'zustand';
+import { TRoomLayout } from '../compute/types.ts';
+import { createRoomLayout } from '../compute/createRoomLayout.ts';
+import { computeWallRemoval } from '../compute/computeWallRemoval.ts';
 
 const DEFAULT_STEP = 5;
 const DEFAULT_WIDTH = 30;
@@ -10,13 +13,14 @@ type State = {
   width: number;
   height: number;
   maxSize: number;
+  roomLayout: TRoomLayout | undefined;
 };
 
 type Actions = {
   setStepSize: (sliderInput: number[]) => void;
   setWidth: (sliderInput: number[]) => void;
   setHeight: (sliderInput: number[]) => void;
-  setGenerated: () => void;
+  handleGenerate: () => void;
 };
 
 export const useStore = create<State & Actions>((set) => ({
@@ -25,6 +29,7 @@ export const useStore = create<State & Actions>((set) => ({
   width: DEFAULT_WIDTH,
   height: DEFAULT_HEIGHT,
   maxSize: 50,
+  roomLayout: undefined,
   setStepSize: (sliderInput: number[]) =>
     set((state) => ({
       stepSize: sliderInput[0],
@@ -34,5 +39,13 @@ export const useStore = create<State & Actions>((set) => ({
     })),
   setWidth: (sliderInput: number[]) => set(() => ({ width: sliderInput[0] })),
   setHeight: (sliderInput: number[]) => set(() => ({ height: sliderInput[0] })),
-  setGenerated: () => set(() => ({ generated: true })),
+  handleGenerate: () =>
+    set((state) => ({
+      generated: true,
+      roomLayout: computeWallRemoval({
+        stepSize: state.stepSize,
+        width: state.width,
+        height: state.height,
+      })[0],
+    })),
 }));

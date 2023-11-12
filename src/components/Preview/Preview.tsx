@@ -2,21 +2,18 @@ import React, { useMemo } from 'react';
 import { Box } from '@radix-ui/themes';
 import { useStore } from '../../store/store.ts';
 import { BoxPosition } from '../GenerateBox/GenerateBox.tsx';
-import { Sprite, Stage } from '@pixi/react';
-import { createBase } from '../../compute/createBase.ts';
+import { Stage } from '@pixi/react';
 import { DEFAULT_POINT_SIZE } from '../../compute/types.ts';
-import Line from '../Canvas/Line.tsx';
-import Point from '../Canvas/Point.tsx';
+import Base from '../Canvas/Base.tsx';
+import RoomLayout from '../Canvas/RoomLayout.tsx';
 
 interface PreviewProps {}
 
 const Preview: React.FC<PreviewProps> = () => {
   const generated = useStore((state) => state.generated);
-  const stepSize = useStore((state) => state.stepSize);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
-
-  const grid = useMemo(() => createBase({ width, height, stepSize }), [width, height, stepSize]);
+  const roomLayout = useStore((state) => state.roomLayout);
 
   const boxPosition: BoxPosition = useMemo(() => {
     if (generated) {
@@ -39,6 +36,8 @@ const Preview: React.FC<PreviewProps> = () => {
       };
     }
   }, [generated]);
+
+  console.log('ROOM LAYOUT - ', roomLayout);
 
   return (
     <Box
@@ -65,20 +64,10 @@ const Preview: React.FC<PreviewProps> = () => {
         <Stage
           width={width * DEFAULT_POINT_SIZE}
           height={height * DEFAULT_POINT_SIZE}
-          options={{ backgroundColor: 'white' }}
+          options={{ backgroundColor: 0xffffff }}
         >
-          <Sprite
-            image="https://pixijs.io/pixi-react/img/bunny.png"
-            x={0}
-            y={0}
-            anchor={{ x: 0.5, y: 0.5 }}
-          />
-          {Object.keys(grid.lines).map((lineKey) => (
-            <Line line={grid.lines[lineKey]} />
-          ))}
-          {Object.keys(grid.points).map((pointKey) => (
-            <Point point={grid.points[pointKey]} />
-          ))}
+          <Base />
+          {roomLayout && <RoomLayout roomLayout={roomLayout} />}
         </Stage>
       </Box>
     </Box>

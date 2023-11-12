@@ -1,4 +1,4 @@
-import { GridLayout, LineMap, TPoint, pointKey, PointMap } from './types.ts';
+import { TGridLayout, TLineMap, TPoint, pointKey, TPointMap } from './types.ts';
 
 export interface CreateBaseProps {
   stepSize: number;
@@ -6,9 +6,9 @@ export interface CreateBaseProps {
   height: number;
 }
 
-export function createBase({ stepSize, width, height }: CreateBaseProps): GridLayout {
-  const pointMap: PointMap = {};
-  const lineMap: LineMap = {};
+export function createBase({ stepSize, width, height }: CreateBaseProps): TGridLayout {
+  const pointMap: TPointMap = {};
+  const lineMap: TLineMap = {};
 
   for (let x = 0; x <= width; x += stepSize) {
     for (let y = 0; y <= height; y += stepSize) {
@@ -35,9 +35,3 @@ export function createBase({ stepSize, width, height }: CreateBaseProps): GridLa
     lines: lineMap,
   };
 }
-
-createBase({
-  stepSize: 5,
-  width: 30,
-  height: 15,
-});

@@ -32,7 +32,7 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
   const setStepSize = useStore((state) => state.setStepSize);
   const setWidth = useStore((state) => state.setWidth);
   const setHeight = useStore((state) => state.setHeight);
-  const setGenerated = useStore((state) => state.setGenerated);
+  const handleGenerate = useStore((state) => state.handleGenerate);
 
   const boxPosition: BoxPosition = useMemo(() => {
     if (generated) {
@@ -112,7 +112,7 @@ const GenerateBox: React.FC<GenerateBoxProps> = () => {
               <Text align="left">{height} meters</Text>
             </Box>
           </Grid>
-          <Button onClick={setGenerated}>
+          <Button onClick={handleGenerate}>
             <UpdateIcon />
             Generate
           </Button>
