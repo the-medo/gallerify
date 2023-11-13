@@ -3,7 +3,7 @@ import { useStore } from '../../store/store.ts';
 import { Canvas } from '@react-three/fiber';
 import Base3d from '../Canvas/3D/Base3d.tsx';
 import RoomLayout from '../Canvas/RoomLayout.tsx';
-import { Stats, OrbitControls } from '@react-three/drei';
+import { Stats, CameraControls } from '@react-three/drei';
 
 interface Preview3dProps {}
 
@@ -11,14 +11,23 @@ const Preview3d: React.FC<Preview3dProps> = () => {
   const roomLayout = useStore((state) => state.roomLayout);
 
   return (
-    <Canvas>
-      <ambientLight intensity={Math.PI / 2} />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-      <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
+    <Canvas shadows={true}>
+      <ambientLight castShadow intensity={Math.PI * 0.4} position={[0, 3, 0]} />
+      {/*<spotLight
+        castShadow
+        position={[0, 10, 0]}
+        angle={0.7}
+        penumbra={1}
+        decay={0}
+        intensity={Math.PI}
+      />*/}
+      <pointLight castShadow position={[1, 4, 1]} decay={0} intensity={Math.PI} />
 
       <Base3d />
       {roomLayout && <RoomLayout roomLayout={roomLayout} />}
-      <OrbitControls />
+      {/*<OrbitControls />*/}
+      <CameraControls />
+      {/*<PointerLockControls />*/}
       <Stats />
     </Canvas>
   );

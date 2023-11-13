@@ -3,6 +3,7 @@ import { TWall } from '../../../compute/types.ts';
 import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
 import { calculateAngle } from '../../../compute/functions.ts';
+import { useLoader } from '@react-three/fiber';
 
 interface Wall3dProps {
   wall: TWall;
@@ -19,6 +20,8 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
   const stepSize = useStore((state) => state.stepSize);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
+
+  const texture = useLoader(THREE.TextureLoader, '/src/assets/textures/wall/wall8.png');
 
   const wallData: WallData = useMemo(() => {
     const { start, end } = wall.line;
@@ -56,12 +59,14 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
 
   return (
     <mesh
+      castShadow
+      receiveShadow
       ref={meshRef}
       // offset-x={wall.line.start.x}
       rotation={wallData.rotation}
       position={wallData.position}
     >
-      <meshStandardMaterial color={'grey'} />
+      <meshStandardMaterial color={'white'} roughness={1} metalness={0} map={texture} />
     </mesh>
   );
 };
