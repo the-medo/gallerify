@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TWall } from '../../../compute/types.ts';
 import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
 import { calculateAngle } from '../../../compute/functions.ts';
-import { useLoader } from '@react-three/fiber';
+import { ThreeEvent, useFrame, useLoader } from '@react-three/fiber';
 
 interface Wall3dProps {
   wall: TWall;
@@ -16,12 +16,34 @@ interface WallData {
 }
 
 const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
+  const [hovered, setHovered] = useState(false);
+
   const meshRef = useRef<THREE.Mesh>(null!);
+  const wireframeMeshRef = useRef<THREE.Mesh>(null!);
   const stepSize = useStore((state) => state.stepSize);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
+  const selectedWall = useStore((state) => state.selectedWall);
+  const setSelectedWall = useStore((state) => state.setSelectedWall);
 
   const texture = useLoader(THREE.TextureLoader, '/src/assets/textures/wall/wall8.png');
+
+  const onPointerOverHandler = useCallback((event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    if (event.intersections.length > 0 && event.intersections[0].object === meshRef.current) {
+      setHovered(true);
+    }
+  }, []);
+
+  const onClickHandler = useCallback(
+    (event: ThreeEvent<MouseEvent>) => {
+      event.stopPropagation();
+      if (event.intersections.length > 0 && event.intersections[0].object === meshRef.current) {
+        setSelectedWall(wall.id);
+      }
+    },
+    [setSelectedWall, wall.id],
+  );
 
   const wallData: WallData = useMemo(() => {
     const { start, end } = wall.line;
@@ -50,24 +72,50 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
   }, [height, stepSize, wall.line, width]);
 
   useEffect(() => {
-    const geometry = new THREE.BoxGeometry(0.25, 2.5, wallData.length);
+    const geometry = new THREE.BoxGeometry(0.25, 2.5, wallData.length + 0.25);
 
     if (meshRef.current) {
       meshRef.current.geometry = geometry;
     }
+    if (wireframeMeshRef.current) {
+      wireframeMeshRef.current.geometry = geometry;
+    }
   }, [wallData]);
 
+  useFrame(() => {
+    if (meshRef.current && wireframeMeshRef.current) {
+      const isSelected = selectedWall === wall.id;
+
+      const material = meshRef.current.material as THREE.MeshStandardMaterial;
+
+      material.opacity = 1 - (isSelected ? 0.25 : 0) - (hovered ? 0.25 : 0);
+      material.transparent = true;
+    }
+  });
+
   return (
-    <mesh
-      castShadow
-      receiveShadow
-      ref={meshRef}
-      // offset-x={wall.line.start.x}
-      rotation={wallData.rotation}
-      position={wallData.position}
-    >
-      <meshStandardMaterial color={'white'} roughness={1} metalness={0} map={texture} />
-    </mesh>
+    <>
+      <mesh
+        ref={wireframeMeshRef}
+        receiveShadow
+        rotation={wallData.rotation}
+        position={wallData.position}
+      >
+        <meshBasicMaterial color="black" />
+      </mesh>
+      <mesh
+        castShadow
+        receiveShadow
+        ref={meshRef}
+        rotation={wallData.rotation}
+        position={wallData.position}
+        onPointerOver={onPointerOverHandler}
+        onPointerOut={() => setHovered(false)}
+        onClick={onClickHandler}
+      >
+        <meshStandardMaterial roughness={1} metalness={0} map={texture} />
+      </mesh>
+    </>
   );
 };
 

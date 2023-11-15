@@ -18,6 +18,7 @@ type State = {
   windowWidth: number;
   squareSize: number;
   roomLayout: TRoomLayout | undefined;
+  selectedWall: string | undefined;
 };
 
 type Actions = {
@@ -26,6 +27,7 @@ type Actions = {
   setWidth: (sliderInput: number[]) => void;
   setHeight: (sliderInput: number[]) => void;
   setWindowWidth: (width: number) => void;
+  setSelectedWall: (wallId: string) => void;
   handleGenerate: () => void;
 };
 
@@ -45,6 +47,7 @@ export const useStore = create<State & Actions>((set) => ({
   roomLayout: undefined,
   windowWidth: 1920,
   squareSize: DEFAULT_POINT_SIZE,
+  selectedWall: undefined,
 
   setPreviewMode: (mode: PreviewMode) => set(() => ({ previewMode: mode })),
 
@@ -75,6 +78,8 @@ export const useStore = create<State & Actions>((set) => ({
       windowWidth: width,
       squareSize: computeSquareSize(state.width, width),
     })),
+
+  setSelectedWall: (wallId: string) => set(() => ({ selectedWall: wallId })),
 
   handleGenerate: () =>
     set((state) => ({

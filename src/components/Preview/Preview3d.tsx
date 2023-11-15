@@ -11,8 +11,8 @@ const Preview3d: React.FC<Preview3dProps> = () => {
   const roomLayout = useStore((state) => state.roomLayout);
 
   return (
-    <Canvas shadows={true}>
-      <ambientLight castShadow intensity={Math.PI * 0.4} position={[0, 3, 0]} />
+    <Canvas shadows>
+      <ambientLight intensity={Math.PI * 0.4} position={[0, 3, 0]} />
       {/*<spotLight
         castShadow
         position={[0, 10, 0]}
@@ -21,7 +21,7 @@ const Preview3d: React.FC<Preview3dProps> = () => {
         decay={0}
         intensity={Math.PI}
       />*/}
-      <pointLight castShadow position={[1, 4, 1]} decay={0} intensity={Math.PI} />
+      <pointLight castShadow position={[1, 4, 1]} decay={0} intensity={Math.PI * 0.3} />
 
       <Base3d />
       {roomLayout && <RoomLayout roomLayout={roomLayout} />}
