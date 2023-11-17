@@ -23,7 +23,8 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
   const stepSize = useStore((state) => state.stepSize);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
-  const selectedWall = useStore((state) => state.selectedWall);
+  const isSelected = useStore((state) => state.selectedWallIds[wall.id]);
+  const toggleSelectedWall = useStore((state) => state.toggleSelectedWall);
   const setSelectedWall = useStore((state) => state.setSelectedWall);
 
   const texture = useLoader(THREE.TextureLoader, '/src/assets/textures/wall/wall8.png');
@@ -39,10 +40,17 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
     (event: ThreeEvent<MouseEvent>) => {
       event.stopPropagation();
       if (event.intersections.length > 0 && event.intersections[0].object === meshRef.current) {
-        setSelectedWall(wall.id);
+        console.log('Clicking!');
+        if (event.ctrlKey) {
+          toggleSelectedWall(wall.id);
+          console.log('Toggling!');
+        } else {
+          console.log('Selecting!');
+          setSelectedWall(wall.id);
+        }
       }
     },
-    [setSelectedWall, wall.id],
+    [setSelectedWall, toggleSelectedWall, wall.id],
   );
 
   const wallData: WallData = useMemo(() => {
@@ -84,8 +92,6 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
 
   useFrame(() => {
     if (meshRef.current && wireframeMeshRef.current) {
-      const isSelected = selectedWall === wall.id;
-
       const material = meshRef.current.material as THREE.MeshStandardMaterial;
 
       material.opacity = 1 - (isSelected ? 0.25 : 0) - (hovered ? 0.25 : 0);

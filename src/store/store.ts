@@ -18,7 +18,7 @@ type State = {
   windowWidth: number;
   squareSize: number;
   roomLayout: TRoomLayout | undefined;
-  selectedWall: string | undefined;
+  selectedWallIds: Record<string, true | undefined>;
 };
 
 type Actions = {
@@ -27,6 +27,7 @@ type Actions = {
   setWidth: (sliderInput: number[]) => void;
   setHeight: (sliderInput: number[]) => void;
   setWindowWidth: (width: number) => void;
+  toggleSelectedWall: (wallId: string) => void;
   setSelectedWall: (wallId: string) => void;
   handleGenerate: () => void;
 };
@@ -39,7 +40,7 @@ const computeDimension = (dimension: number, stepSize: number) =>
 
 export const useStore = create<State & Actions>((set) => ({
   generated: false,
-  previewMode: '2d',
+  previewMode: '3d',
   stepSize: DEFAULT_STEP,
   width: DEFAULT_WIDTH,
   height: DEFAULT_HEIGHT,
@@ -47,7 +48,7 @@ export const useStore = create<State & Actions>((set) => ({
   roomLayout: undefined,
   windowWidth: 1920,
   squareSize: DEFAULT_POINT_SIZE,
-  selectedWall: undefined,
+  selectedWallIds: {},
 
   setPreviewMode: (mode: PreviewMode) => set(() => ({ previewMode: mode })),
 
@@ -79,7 +80,27 @@ export const useStore = create<State & Actions>((set) => ({
       squareSize: computeSquareSize(state.width, width),
     })),
 
-  setSelectedWall: (wallId: string) => set(() => ({ selectedWall: wallId })),
+  toggleSelectedWall: (wallId: string) =>
+    set((state) => {
+      const newWalls = state.selectedWallIds;
+
+      if (newWalls[wallId]) {
+        delete newWalls[wallId];
+      } else {
+        newWalls[wallId] = true;
+      }
+
+      return {
+        selectedWallIds: newWalls,
+      };
+    }),
+
+  setSelectedWall: (wallId: string) =>
+    set(() => ({
+      selectedWallIds: {
+        [wallId]: true,
+      },
+    })),
 
   handleGenerate: () =>
     set((state) => ({
