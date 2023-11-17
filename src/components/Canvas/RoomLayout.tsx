@@ -1,5 +1,5 @@
 import React from 'react';
-import { TRoomLayout, TRoom } from '../../compute/types.ts';
+import { TRoomLayout, TRoom } from '../../utils/types.ts';
 import Room from './Room.tsx';
 
 interface RoomLayoutProps {

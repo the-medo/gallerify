@@ -1,5 +1,5 @@
 import React from 'react';
-import { TRoom, TWall } from '../../compute/types.ts';
+import { TRoom, TWall } from '../../utils/types.ts';
 import Wall2d from './2D/Wall2d.tsx';
 import Wall3d from './3D/Wall3d.tsx';
 import { useStore } from '../../store/store.ts';

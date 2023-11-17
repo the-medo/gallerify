@@ -10,8 +10,9 @@
   e. merge rooms
 
  */
-import { getCommonWalls, removeWallAndMergeRooms, TRoomLayout } from './types.ts';
+import { TRoomLayout } from '../utils/types.ts';
 import { createRoomLayout, CreateRoomLayoutProps } from './createRoomLayout.ts';
+import { getCommonWalls, removeWallAndMergeRooms } from '../utils/functions.ts';
 
 export interface ComputeWallRemovalProps extends CreateRoomLayoutProps {
   seed?: number;

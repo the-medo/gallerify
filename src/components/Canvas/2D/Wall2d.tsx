@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Graphics } from '@pixi/react';
 import { Graphics as PixiGraphics } from '@pixi/graphics';
-import { TWall } from '../../../compute/types.ts';
+import { TWall } from '../../../utils/types.ts';
 import { useStore } from '../../../store/store.ts';
 
 interface Wall2dProps {

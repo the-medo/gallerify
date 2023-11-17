@@ -11,7 +11,7 @@ import {
   TWall,
   wallKeyFromLine,
   WallMap,
-} from './types.ts';
+} from '../utils/types.ts';
 import { CreateBaseProps } from './createBase.ts';
 
 const checkPoint = (x: number, y: number, pointMap: TPointMap): TPoint => {

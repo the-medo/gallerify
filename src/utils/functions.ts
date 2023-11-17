@@ -1,59 +1,17 @@
-export const DEFAULT_POINT_SIZE = 8;
+import * as THREE from 'three';
+import { RoomMap, TPoint, TRoom, TWall, wallKey } from './types.ts';
 
-export type TPoint = {
-  x: number;
-  y: number;
-};
+export function calculateAngle(start: TPoint, end: TPoint): number {
+  const startVec = new THREE.Vector2(start.x, start.y);
+  const endVec = new THREE.Vector2(end.x, end.y);
+  const directionVec = endVec.sub(startVec);
 
-export type TLine = {
-  start: TPoint;
-  end: TPoint;
-};
+  let angleRad = directionVec.angle(); // Returns the angle in radians
+  angleRad -= Math.PI / 2;
 
-export type TWall = {
-  id: string;
-  line: TLine;
-  doors: boolean;
-};
-
-export type TSquare = {
-  id: string;
-  points: TPoint[];
-  walls: TWall[];
-  neighbors: TSquare[];
-};
-
-export type TRoom = {
-  id: string;
-  walls: TWall[];
-  neighbors: TRoom[];
-};
-
-export type TPointMap = Record<string, TPoint>;
-export type TLineMap = Record<string, TLine>;
-export type WallMap = Record<string, TWall>;
-export type RoomMap = Record<string, TRoom>;
-
-export const pointKey = (point: TPoint) => `${point.x};${point.y}`;
-export const lineKey = (line: TLine) => `${pointKey(line.start)}-${pointKey(line.end)}`;
-export const wallKeyFromLine = (line: TLine) => `wall-${lineKey(line)}`;
-export const wallKey = (wall: TWall) => `wall-${lineKey(wall.line)}`;
-export const roomKey = (point: TPoint) => `room-${point.x};${point.y}`;
-
-let squareCounter = 0;
-// let roomCounter = 0;
-
-export const newSquareKey = () => `square-${squareCounter++}`;
-// export const newRoomKey = () => `room-${roomCounter++}`;
-
-export type TGridLayout = {
-  points: TPointMap;
-  lines: TLineMap;
-};
-
-export type TRoomLayout = {
-  rooms: RoomMap;
-};
+  return angleRad;
+  // return (angleRad * 180) / Math.PI;
+}
 
 export const getCommonWalls = (r1: TRoom, r2: TRoom): TWall[] => {
   const commonWalls: TWall[] = [];

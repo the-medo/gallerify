@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { DEFAULT_POINT_SIZE, TRoomLayout } from '../compute/types.ts';
+import { DEFAULT_POINT_SIZE, TRoomLayout } from '../utils/types.ts';
 import { computeWallRemoval } from '../compute/computeWallRemoval.ts';
 
 const DEFAULT_STEP = 3;

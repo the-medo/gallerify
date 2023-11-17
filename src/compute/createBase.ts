@@ -1,4 +1,4 @@
-import { TGridLayout, TLineMap, TPoint, pointKey, TPointMap } from './types.ts';
+import { TGridLayout, TLineMap, TPoint, pointKey, TPointMap } from '../utils/types.ts';
 
 export interface CreateBaseProps {
   stepSize: number;

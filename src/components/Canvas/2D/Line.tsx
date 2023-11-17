@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Graphics } from '@pixi/react';
 import { Graphics as PixiGraphics } from '@pixi/graphics';
-import { TLine } from '../../../compute/types.ts';
+import { TLine } from '../../../utils/types.ts';
 import { useStore } from '../../../store/store.ts';
 
 interface LineProps {

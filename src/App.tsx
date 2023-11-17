@@ -32,7 +32,7 @@ function App() {
         gap={'4'}
       >
         <Flex direction={'column'} gap={'8'}>
-          <Header />
+          {/*<Header />*/}
           <GenerateBox />
           <Turn3dBox />
         </Flex>

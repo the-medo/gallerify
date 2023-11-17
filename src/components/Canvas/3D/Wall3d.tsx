@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TWall } from '../../../compute/types.ts';
+import { TWall } from '../../../utils/types.ts';
 import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
-import { calculateAngle } from '../../../compute/functions.ts';
+import { calculateAngle } from '../../../utils/functions.ts';
 import { ThreeEvent, useFrame, useLoader } from '@react-three/fiber';
 
 interface Wall3dProps {
