@@ -29,6 +29,7 @@ type Actions = {
   setWindowWidth: (width: number) => void;
   toggleSelectedWall: (wallId: string) => void;
   setSelectedWall: (wallId: string) => void;
+  setWallTexture: (textureId: string) => void;
   handleGenerate: () => void;
 };
 
@@ -101,6 +102,26 @@ export const useStore = create<State & Actions>((set) => ({
         [wallId]: true,
       },
     })),
+
+  setWallTexture: (textureId: string) =>
+    set((state) => {
+      const layout = state.roomLayout;
+
+      for (const roomsKey in layout?.rooms) {
+        layout?.rooms[roomsKey].walls.forEach((w) => {
+          if (state.selectedWallIds[w.id]) {
+            w.textureId = textureId;
+            console.log('Found selected wall!');
+          }
+        });
+      }
+
+      console.log('texture 3 - ', textureId);
+
+      return {
+        roomLayout: layout,
+      };
+    }),
 
   handleGenerate: () =>
     set((state) => ({

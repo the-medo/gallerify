@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TWall } from '../../../utils/types.ts';
+import { TLine } from '../../../utils/types.ts';
 import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
 import { calculateAngle } from '../../../utils/functions.ts';
 import { ThreeEvent, useFrame, useLoader } from '@react-three/fiber';
+import { getTexture, wallTextureMap } from '../../../utils/textures.ts';
 
 interface Wall3dProps {
-  wall: TWall;
+  wallId: string;
+  wallTexture: string;
+  wallLine: TLine;
 }
 
 interface WallData {
@@ -15,7 +18,7 @@ interface WallData {
   length: number;
 }
 
-const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
+const Wall3d: React.FC<Wall3dProps> = ({ wallId, wallTexture, wallLine }) => {
   const [hovered, setHovered] = useState(false);
 
   const meshRef = useRef<THREE.Mesh>(null!);
@@ -23,11 +26,11 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
   const stepSize = useStore((state) => state.stepSize);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
-  const isSelected = useStore((state) => state.selectedWallIds[wall.id]);
+  const isSelected = useStore((state) => state.selectedWallIds[wallId]);
   const toggleSelectedWall = useStore((state) => state.toggleSelectedWall);
   const setSelectedWall = useStore((state) => state.setSelectedWall);
 
-  const texture = useLoader(THREE.TextureLoader, '/src/assets/textures/wall/wall8.png');
+  const texture = useLoader(THREE.TextureLoader, wallTexture);
 
   const onPointerOverHandler = useCallback((event: ThreeEvent<MouseEvent>) => {
     event.stopPropagation();
@@ -42,19 +45,19 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
       if (event.intersections.length > 0 && event.intersections[0].object === meshRef.current) {
         console.log('Clicking!');
         if (event.ctrlKey) {
-          toggleSelectedWall(wall.id);
+          toggleSelectedWall(wallId);
           console.log('Toggling!');
         } else {
           console.log('Selecting!');
-          setSelectedWall(wall.id);
+          setSelectedWall(wallId);
         }
       }
     },
-    [setSelectedWall, toggleSelectedWall, wall.id],
+    [setSelectedWall, toggleSelectedWall, wallId],
   );
 
   const wallData: WallData = useMemo(() => {
-    const { start, end } = wall.line;
+    const { start, end } = wallLine;
 
     const angle = calculateAngle(start, end);
     const xWidthOffset = -width / 2;
@@ -77,7 +80,7 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
       position,
       length,
     };
-  }, [height, stepSize, wall.line, width]);
+  }, [height, stepSize, wallLine, width]);
 
   useEffect(() => {
     const geometry = new THREE.BoxGeometry(0.25, 2.5, wallData.length + 0.25);
@@ -90,12 +93,18 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
     }
   }, [wallData]);
 
+  useEffect(() => {
+    if (meshRef.current) {
+      const material = meshRef.current.material as THREE.MeshStandardMaterial;
+      material.map = texture;
+      material.needsUpdate = true;
+    }
+  }, [texture, wallTexture]);
+
   useFrame(() => {
     if (meshRef.current && wireframeMeshRef.current) {
       const material = meshRef.current.material as THREE.MeshStandardMaterial;
-
       material.opacity = 1 - (isSelected ? 0.25 : 0) - (hovered ? 0.25 : 0);
-      material.transparent = true;
     }
   });
 
@@ -119,7 +128,7 @@ const Wall3d: React.FC<Wall3dProps> = ({ wall }) => {
         onPointerOut={() => setHovered(false)}
         onClick={onClickHandler}
       >
-        <meshStandardMaterial roughness={1} metalness={0} map={texture} />
+        <meshStandardMaterial roughness={1} metalness={0} map={texture} transparent />
       </mesh>
     </>
   );

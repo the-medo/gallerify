@@ -3,6 +3,7 @@ import { Box } from '@radix-ui/themes';
 import { useStore } from '../../store/store.ts';
 import Preview2d from './Preview2d.tsx';
 import Preview3d from './Preview3d.tsx';
+import TextureSelector from '../TextureSelector/TextureSelector.tsx';
 
 interface PreviewProps {}
 
@@ -23,7 +24,12 @@ const Preview: React.FC<PreviewProps> = () => {
         }}
       >
         {previewMode === '2d' && <Preview2d />}
-        {previewMode === '3d' && <Preview3d />}
+        {previewMode === '3d' && (
+          <>
+            <Preview3d />
+            <TextureSelector />
+          </>
+        )}
       </Box>
     </Box>
   );

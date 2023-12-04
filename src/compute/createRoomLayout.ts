@@ -28,7 +28,7 @@ const checkLine = (start: TPoint, end: TPoint, lineMap: TLineMap): TLine => {
 
 const checkWall = (line: TLine, wallMap: WallMap): TWall => {
   const key = wallKeyFromLine(line);
-  if (!wallMap[key]) wallMap[key] = { id: key, line, doors: false };
+  if (!wallMap[key]) wallMap[key] = { id: key, line, doors: false, textureId: '1' };
   return wallMap[key];
 };
 
