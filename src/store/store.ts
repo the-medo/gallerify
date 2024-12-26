@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { DEFAULT_POINT_SIZE, TRoomLayout } from '../utils/types.ts';
+import { DEFAULT_POINT_SIZE, TRoomLayout, TWall } from '../utils/types.ts';
 import { computeWallRemoval } from '../compute/computeWallRemoval.ts';
 
 const DEFAULT_STEP = 3;
@@ -18,6 +18,7 @@ type State = {
   windowWidth: number;
   squareSize: number;
   roomLayout: TRoomLayout | undefined;
+  walls: Record<string, TWall>;
   selectedWallIds: Record<string, true | undefined>;
 };
 
@@ -28,13 +29,14 @@ type Actions = {
   setHeight: (sliderInput: number[]) => void;
   setWindowWidth: (width: number) => void;
   toggleSelectedWall: (wallId: string) => void;
+  setWall: (wallId: string, wallData: TWall) => void;
   setSelectedWall: (wallId: string) => void;
   setWallTexture: (textureId: string) => void;
   handleGenerate: () => void;
 };
 
 const computeSquareSize = (width: number, windowWidth: number) =>
-  Math.round((windowWidth - (windowWidth > 1024 ? windowWidth / 1.5 : windowWidth / 2)) / width);
+  Math.round((windowWidth - (windowWidth > 1024 ? windowWidth / 2 : windowWidth / 1.5)) / width);
 
 const computeDimension = (dimension: number, stepSize: number) =>
   Math.round(dimension / stepSize) * stepSize;
@@ -47,6 +49,7 @@ export const useStore = create<State & Actions>((set) => ({
   height: DEFAULT_HEIGHT,
   maxSize: 30,
   roomLayout: undefined,
+  walls: {},
   windowWidth: 1920,
   squareSize: DEFAULT_POINT_SIZE,
   selectedWallIds: {},
@@ -96,6 +99,14 @@ export const useStore = create<State & Actions>((set) => ({
       };
     }),
 
+  setWall: (wallId: string, wallData: TWall) =>
+    set((state) => ({
+      walls: {
+        ...state.walls,
+        [wallId]: wallData,
+      },
+    })),
+
   setSelectedWall: (wallId: string) =>
     set(() => ({
       selectedWallIds: {
@@ -108,7 +119,7 @@ export const useStore = create<State & Actions>((set) => ({
       const layout = state.roomLayout;
 
       for (const roomsKey in layout?.rooms) {
-        layout?.rooms[roomsKey].walls.forEach((w) => {
+        layout.rooms[roomsKey].walls.forEach((w) => {
           if (state.selectedWallIds[w.id]) {
             w.textureId = textureId;
             console.log('Found selected wall!');
@@ -116,20 +127,33 @@ export const useStore = create<State & Actions>((set) => ({
         });
       }
 
+      const walls = state.walls;
+      Object.keys(state.selectedWallIds).forEach((swid) => (walls[swid].textureId = textureId));
+
       console.log('texture 3 - ', textureId);
 
       return {
         roomLayout: layout,
+        walls,
       };
     }),
 
   handleGenerate: () =>
-    set((state) => ({
-      generated: true,
-      roomLayout: computeWallRemoval({
+    set((state) => {
+      const roomLayout = computeWallRemoval({
         stepSize: state.stepSize,
         width: state.width,
         height: state.height,
-      })[0],
-    })),
+      })[0];
+
+      const walls = Object.entries(roomLayout.rooms)
+        .map(([, r]) => r.walls)
+        .flat();
+
+      return {
+        generated: true,
+        roomLayout,
+        walls: walls.reduce((acc, wall) => ({ ...acc, [wall.id]: wall }), {}),
+      };
+    }),
 }));

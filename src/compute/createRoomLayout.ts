@@ -85,6 +85,8 @@ export function createRoomLayout({ stepSize, width, height }: CreateRoomLayoutPr
     }
   }
 
+  console.log({ roomMap });
+
   return {
     rooms: roomMap,
   };

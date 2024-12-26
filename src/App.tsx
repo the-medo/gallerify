@@ -1,6 +1,5 @@
 import { Box, Flex, Theme } from '@radix-ui/themes';
 import Background from './components/Background/Background.tsx';
-import Header from './components/Header/Header.tsx';
 import GenerateBox from './components/GenerateBox/GenerateBox.tsx';
 import Preview from './components/Preview/Preview.tsx';
 import { useEffect } from 'react';
