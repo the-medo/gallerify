@@ -1,15 +1,26 @@
 import { create } from 'zustand';
 import { DEFAULT_POINT_SIZE, TRoomLayout, TWall } from '../utils/types.ts';
 import { computeWallRemoval } from '../compute/computeWallRemoval.ts';
+import {
+  createPresetLayout,
+  DEFAULT_PRESET_ID,
+  galleryPresets,
+} from '../presets/galleryPresets.ts';
+import type { CreateBaseProps } from '../compute/createBase.ts';
 
-const DEFAULT_STEP = 3;
-const DEFAULT_WIDTH = 12;
-const DEFAULT_HEIGHT = 9;
+const defaultPreset = galleryPresets.find((preset) => preset.id === DEFAULT_PRESET_ID)!;
+const initialLayout = createPresetLayout(defaultPreset);
+const layoutWalls = (layout: TRoomLayout): Record<string, TWall> =>
+  Object.fromEntries(
+    Object.values(layout.rooms).flatMap((room) => room.walls.map((wall) => [wall.id, wall])),
+  );
 
 type PreviewMode = '2d' | '3d';
 
 type State = {
   generated: boolean;
+  activePresetId: string | null;
+  generatorSettings: CreateBaseProps;
   previewMode: PreviewMode;
   stepSize: number;
   width: number;
@@ -33,23 +44,33 @@ type Actions = {
   setSelectedWall: (wallId: string) => void;
   setWallTexture: (textureId: string) => void;
   handleGenerate: () => void;
+  loadPreset: (presetId: string) => void;
 };
 
 const computeSquareSize = (width: number, windowWidth: number) =>
   Math.round((windowWidth - (windowWidth > 1024 ? windowWidth / 2 : windowWidth / 1.5)) / width);
 
 const computeDimension = (dimension: number, stepSize: number) =>
-  Math.round(dimension / stepSize) * stepSize;
+  Math.min(
+    Math.floor(30 / stepSize) * stepSize,
+    Math.max(stepSize * 2, Math.round(dimension / stepSize) * stepSize),
+  );
 
 export const useStore = create<State & Actions>((set) => ({
-  generated: false,
+  generated: true,
+  activePresetId: defaultPreset.id,
+  generatorSettings: {
+    stepSize: defaultPreset.stepSize,
+    width: defaultPreset.width,
+    height: defaultPreset.height,
+  },
   previewMode: '3d',
-  stepSize: DEFAULT_STEP,
-  width: DEFAULT_WIDTH,
-  height: DEFAULT_HEIGHT,
+  stepSize: defaultPreset.stepSize,
+  width: defaultPreset.width,
+  height: defaultPreset.height,
   maxSize: 30,
-  roomLayout: undefined,
-  walls: {},
+  roomLayout: initialLayout,
+  walls: layoutWalls(initialLayout),
   windowWidth: 1920,
   squareSize: DEFAULT_POINT_SIZE,
   selectedWallIds: {},
@@ -58,25 +79,22 @@ export const useStore = create<State & Actions>((set) => ({
 
   setStepSize: (sliderInput: number[]) =>
     set((state) => {
-      const width = computeDimension(state.width, sliderInput[0]);
-      const height = computeDimension(state.height, sliderInput[0]);
-      const maxSize = computeDimension(state.maxSize, sliderInput[0]);
+      const width = computeDimension(state.generatorSettings.width, sliderInput[0]);
+      const height = computeDimension(state.generatorSettings.height, sliderInput[0]);
+      const maxSize = Math.floor(30 / sliderInput[0]) * sliderInput[0];
 
       return {
-        stepSize: sliderInput[0],
-        width,
-        height,
+        generatorSettings: { stepSize: sliderInput[0], width, height },
         maxSize,
-        squareSize: computeSquareSize(width, state.windowWidth),
       };
     }),
 
   setWidth: (sliderInput: number[]) =>
     set((state) => ({
-      width: sliderInput[0],
-      squareSize: computeSquareSize(sliderInput[0], state.windowWidth),
+      generatorSettings: { ...state.generatorSettings, width: sliderInput[0] },
     })),
-  setHeight: (sliderInput: number[]) => set(() => ({ height: sliderInput[0] })),
+  setHeight: (sliderInput: number[]) =>
+    set((state) => ({ generatorSettings: { ...state.generatorSettings, height: sliderInput[0] } })),
 
   setWindowWidth: (width: number) =>
     set((state) => ({
@@ -140,21 +158,35 @@ export const useStore = create<State & Actions>((set) => ({
 
   handleGenerate: () =>
     set((state) => {
-      const roomLayout = computeWallRemoval({
-        stepSize: state.stepSize,
-        width: state.width,
-        height: state.height,
-      })[0];
-
-      const walls = Object.entries(roomLayout.rooms)
-        .map(([, r]) => r.walls)
-        .flat();
+      const roomLayout = computeWallRemoval(state.generatorSettings)[0];
 
       return {
         generated: true,
+        activePresetId: null,
+        ...state.generatorSettings,
+        squareSize: computeSquareSize(state.generatorSettings.width, state.windowWidth),
         selectedWallIds: {},
         roomLayout,
-        walls: walls.reduce((acc, wall) => ({ ...acc, [wall.id]: wall }), {}),
+        walls: layoutWalls(roomLayout),
+      };
+    }),
+
+  loadPreset: (presetId: string) =>
+    set((state) => {
+      const preset = galleryPresets.find((candidate) => candidate.id === presetId);
+      if (!preset) return state;
+      const roomLayout = createPresetLayout(preset);
+      const dimensions = { width: preset.width, height: preset.height, stepSize: preset.stepSize };
+      return {
+        ...dimensions,
+        generatorSettings: dimensions,
+        maxSize: Math.floor(30 / preset.stepSize) * preset.stepSize,
+        generated: true,
+        activePresetId: preset.id,
+        roomLayout,
+        walls: layoutWalls(roomLayout),
+        selectedWallIds: {},
+        squareSize: computeSquareSize(preset.width, state.windowWidth),
       };
     }),
 }));

@@ -5,6 +5,7 @@ import { useStore } from './store/store.ts';
 import Turn3dBox from './components/GenerateBox/Turn3dBox.tsx';
 import GalleryArtwork from './components/GalleryArtwork/GalleryArtwork.tsx';
 import gallerifyMark from './assets/brand/gallerify-mark.png';
+import PresetSelector from './components/PresetSelector/PresetSelector.tsx';
 
 function App() {
   const setWindowWidth = useStore((state) => state.setWindowWidth);
@@ -13,7 +14,6 @@ function App() {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
     handleResize();
-    if (!useStore.getState().generated) useStore.getState().handleGenerate();
     return () => window.removeEventListener('resize', handleResize);
   }, [setWindowWidth]);
 
@@ -67,6 +67,7 @@ function App() {
             </aside>
             <Preview />
           </div>
+          <PresetSelector />
           <footer className="page-footer">
             <span>For the art you make. And the art you love.</span>
             <span>Gallerify / A home for art online</span>
