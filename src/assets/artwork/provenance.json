@@ -1,0 +1,14 @@
+{
+  "generator": "Built-in image_gen tool",
+  "purpose": "Original decorative art studies for Gallerify's Curator and Palette visual directions.",
+  "assets": [
+    {
+      "file": "curator.png",
+      "prompt": "Use case: stylized-concept. Asset type: original abstract fine-art painting used as a small framed artwork in an editorial art-gallery website. Create a single portrait-format abstract artwork, flat front-on scan, the artwork fills the image edge to edge. Large tactile, gestural fields of muted oxblood, burnt sienna, sand and ivory on warm unbleached paper, one expressive charcoal curved line, subtle scraped oil paint and dry-brush grain, restrained contemporary museum-catalog sensibility. Asymmetrical elegant composition with generous cream negative space, visually rich real pigment texture. No text, no signature, no border, no frame, no room, no objects, no watermark. This is the art itself, not a website mockup."
+    },
+    {
+      "file": "palette.png",
+      "prompt": "Use case: stylized-concept. Asset type: original painting for an artist's online-gallery creation interface, to be displayed as a small printed art card. Create one square abstract gouache and paper collage artwork, front-on, edge-to-edge. Playful yet sophisticated interlocking hand-painted organic shapes and gestural line work, deep ultramarine, golden ochre, muted terracotta and olive on warm ivory paper. Painterly brush marks, visibly uneven edges, subtle layered torn paper and pigment. Well-balanced composition, generous negative space. No text, no signature, no border, no frame, no room or objects, no watermark. Art itself only, not a website mockup."
+    }
+  ]
+}

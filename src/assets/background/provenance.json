@@ -1,0 +1,9 @@
+{
+  "asset": "gallery-paper.png",
+  "use_case": "illustration-story",
+  "purpose": "Decorative background for Gallerify's Palette design.",
+  "tool": "built-in image_gen",
+  "generated": "2026-10-22",
+  "transparent_background": false,
+  "prompt": "Use case: illustration-story. Create a wide landscape background artwork for Gallerify, an independent online art gallery builder. This is a subtle decorative WEBSITE BACKGROUND, not a hero illustration: the interface, headings and artwork will sit on top. Warm cream uncoated artist's paper, color #f7f0e3, with authentic faint paper fibers. An airy asymmetric composition of abstract hand-painted gouache washes, translucent torn tissue-paper shapes, and a few loose graphite contour arcs. Palette: dusty terracotta, faded ochre, muted slate blue, a whisper of sage. Concentrate the expressive marks toward the outer edges: a soft terracotta wash entering the upper-left edge, an irregular pale blue crescent and delicate looping pencil contour on the far right, small ochre/cream paper fragments near the lower left. Keep the inner 65 percent mostly clean cream paper with very faint texture and generous negative space for readable text. Large sophisticated gestures with visibly handmade edges; quiet, artful, refined, editorial, like an artist's worktable. Soft low-contrast pigments, restrained saturation, not muddy. Color should remain visibly present at the edges but never dominate the page. Fade the painted shapes naturally into untouched cream paper toward the lower edge so this background can blend into a solid cream website. Flat overhead scanned artwork, no shadows or photorealistic objects, no frame, no typography, no words, no logo, no UI, no computer mockup, no watermark. Landscape aspect ratio roughly 3:2, high-resolution texture."
+}

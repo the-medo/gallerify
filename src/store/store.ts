@@ -86,7 +86,7 @@ export const useStore = create<State & Actions>((set) => ({
 
   toggleSelectedWall: (wallId: string) =>
     set((state) => {
-      const newWalls = state.selectedWallIds;
+      const newWalls = { ...state.selectedWallIds };
 
       if (newWalls[wallId]) {
         delete newWalls[wallId];
@@ -152,6 +152,7 @@ export const useStore = create<State & Actions>((set) => ({
 
       return {
         generated: true,
+        selectedWallIds: {},
         roomLayout,
         walls: walls.reduce((acc, wall) => ({ ...acc, [wall.id]: wall }), {}),
       };

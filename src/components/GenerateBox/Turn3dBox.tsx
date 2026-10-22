@@ -1,28 +1,34 @@
-import { Box, Button, Card, Flex } from '@radix-ui/themes';
-import React from 'react';
+import { CubeIcon, ViewGridIcon } from '@radix-ui/react-icons';
 import { useStore } from '../../store/store.ts';
 
-interface Turn3dBoxProps {}
-
-const Turn3dBox: React.FC<Turn3dBoxProps> = () => {
+export default function Turn3dBox() {
   const generated = useStore((state) => state.generated);
   const previewMode = useStore((state) => state.previewMode);
   const setPreviewMode = useStore((state) => state.setPreviewMode);
-
   return (
-    <Box width="100%" px={'8'}>
-      <Card>
-        <Flex p={'3'} display={'flex'} gap={'3'} direction={'column'}>
-          <Button
-            onClick={() => setPreviewMode(previewMode === '2d' ? '3d' : '2d')}
-            disabled={!generated}
-          >
-            {previewMode === '2d' ? 'Preview in 3D' : 'Back to 2D'}
-          </Button>
-        </Flex>
-      </Card>
-    </Box>
+    <section className="view-section" aria-label="Perspective">
+      <div className="section-kicker">
+        <span>02</span> The perspective
+      </div>
+      <div className="view-options" role="group" aria-label="Preview mode">
+        <button
+          type="button"
+          onClick={() => setPreviewMode('2d')}
+          disabled={!generated}
+          aria-pressed={previewMode === '2d'}
+        >
+          <ViewGridIcon /> 2D plan
+        </button>
+        <button
+          type="button"
+          onClick={() => setPreviewMode('3d')}
+          disabled={!generated}
+          aria-pressed={previewMode === '3d'}
+        >
+          <CubeIcon /> 3D view
+        </button>
+      </div>
+      <p className="view-caption">See your gallery from a new perspective.</p>
+    </section>
   );
-};
-
-export default Turn3dBox;
+}

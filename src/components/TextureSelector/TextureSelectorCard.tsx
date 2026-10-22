@@ -1,33 +1,40 @@
-import React, { useCallback } from 'react';
 import { getTexture, TextureUrlMap } from '../../utils/textures.ts';
-import { Avatar } from '@radix-ui/themes';
+import { CheckIcon } from '@radix-ui/react-icons';
 
 interface TextureSelectorCardProps {
   textureMap: TextureUrlMap;
   textureId: string;
   onTextureSelect: (textureId: string) => void;
+  selected: boolean;
+  disabled: boolean;
 }
 
-const TextureSelectorCard: React.FC<TextureSelectorCardProps> = ({
+export default function TextureSelectorCard({
   textureMap,
   textureId,
   onTextureSelect,
-}) => {
-  const url = getTexture(textureMap, textureId);
-
-  const onPointerDownHandler = useCallback(() => {
-    console.log('texture 1 - ', textureId);
-    onTextureSelect(textureId);
-  }, [onTextureSelect, textureId]);
-
+  selected,
+  disabled,
+}: TextureSelectorCardProps) {
   return (
-    <Avatar
-      src={url}
-      alt={`Texture ${textureId}`}
-      onPointerDown={onPointerDownHandler}
-      fallback={<></>}
-    />
+    <button
+      className="texture-option"
+      type="button"
+      aria-label={`Texture ${textureId}`}
+      aria-pressed={selected}
+      disabled={disabled}
+      onClick={() => onTextureSelect(textureId)}
+      title={`Apply texture ${textureId}`}
+    >
+      <span className="texture-image">
+        <img src={getTexture(textureMap, textureId)} alt={`Texture ${textureId}`} />
+        {selected && (
+          <span className="texture-check">
+            <CheckIcon />
+          </span>
+        )}
+      </span>
+      <span className="texture-number">0{textureId}</span>
+    </button>
   );
-};
-
-export default TextureSelectorCard;
+}

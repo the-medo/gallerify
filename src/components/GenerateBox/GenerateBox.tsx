@@ -1,97 +1,93 @@
-import React, { CSSProperties } from 'react';
-import {
-  Box,
-  Button,
-  Card,
-  Flex,
-  Grid,
-  /*Heading,*/
-  LayoutProps,
-  Separator,
-  Slider,
-  Text,
-} from '@radix-ui/themes';
-import { useStore } from '../../store/store.ts';
+import { CSSProperties } from 'react';
 import { UpdateIcon } from '@radix-ui/react-icons';
+import { useStore } from '../../store/store.ts';
 
-export interface BoxPosition {
-  left: LayoutProps['left'];
-  top: LayoutProps['top'];
-  css?: CSSProperties;
+interface DimensionControlProps {
+  id: string;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number[]) => void;
 }
 
-interface GenerateBoxProps {}
-
-const GenerateBox: React.FC<GenerateBoxProps> = () => {
-  const stepSize = useStore((state) => state.stepSize);
-  const width = useStore((state) => state.width);
-  const height = useStore((state) => state.height);
-  const maxSize = useStore((state) => state.maxSize);
-
-  const setStepSize = useStore((state) => state.setStepSize);
-  const setWidth = useStore((state) => state.setWidth);
-  const setHeight = useStore((state) => state.setHeight);
-  const handleGenerate = useStore((state) => state.handleGenerate);
-
+function DimensionControl({ id, label, value, min, max, step, onChange }: DimensionControlProps) {
   return (
-    <Box width="100%" px={'8'}>
-      <Card style={{ height: '100%' }}>
-        <Flex p={'3'} display={'flex'} gap={'3'} direction={'column'}>
-          <Grid
-            columns="3"
-            gap="3"
-            align="center"
-            justify="end"
-            style={{
-              gridTemplateColumns: 'auto 150px auto',
-            }}
-          >
-            <Box width="max-content">
-              <Text align="right">Step size:</Text>
-            </Box>
-            <Slider onValueChange={setStepSize} step={1} value={[stepSize]} min={2} max={10} />
-            <Box width="max-content">
-              <Text align="left">{stepSize} meters</Text>
-            </Box>
-
-            <Separator style={{ gridColumnStart: 1, gridColumnEnd: 4 }} my="3" size="4" />
-
-            <Box width="max-content">
-              <Text align="right">Width:</Text>
-            </Box>
-            <Slider
-              onValueChange={setWidth}
-              value={[width]}
-              step={stepSize}
-              min={stepSize * 2}
-              max={maxSize}
-            />
-            <Box width="max-content">
-              <Text align="left">{width} meters</Text>
-            </Box>
-
-            <Box width="max-content">
-              <Text align="right">Height:</Text>
-            </Box>
-            <Slider
-              onValueChange={setHeight}
-              value={[height]}
-              step={stepSize}
-              min={stepSize * 2}
-              max={maxSize}
-            />
-            <Box width="max-content">
-              <Text align="left">{height} meters</Text>
-            </Box>
-          </Grid>
-          <Button onClick={handleGenerate}>
-            <UpdateIcon />
-            Generate
-          </Button>
-        </Flex>
-      </Card>
-    </Box>
+    <div className="dimension-control">
+      <label htmlFor={id}>
+        <span>{label}</span>
+        <span className="dimension-value">
+          {value}
+          <small>m</small>
+        </span>
+      </label>
+      <input
+        id={id}
+        type="range"
+        aria-label={label}
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange([Number(event.target.value)])}
+        style={{ '--range-progress': `${((value - min) / (max - min)) * 100}%` } as CSSProperties}
+        aria-valuetext={`${value} meters`}
+      />
+      <div className="range-limits" aria-hidden="true">
+        <span>{min} m</span>
+        <span>{max} m</span>
+      </div>
+    </div>
   );
-};
+}
 
-export default GenerateBox;
+export default function GenerateBox() {
+  const { stepSize, width, height, maxSize, setStepSize, setWidth, setHeight, handleGenerate } =
+    useStore();
+  return (
+    <section className="dimensions-section" aria-labelledby="dimensions-title">
+      <div className="section-kicker">
+        <span>01</span> The dimensions
+      </div>
+      <h2 id="dimensions-title">Shape your gallery.</h2>
+      <p className="section-description">Set the space around the art you love.</p>
+      <div className="dimension-fields">
+        <DimensionControl
+          id="step-size"
+          label="Step size"
+          value={stepSize}
+          min={2}
+          max={10}
+          step={1}
+          onChange={setStepSize}
+        />
+        <DimensionControl
+          id="room-width"
+          label="Width"
+          value={width}
+          min={stepSize * 2}
+          max={maxSize}
+          step={stepSize}
+          onChange={setWidth}
+        />
+        <DimensionControl
+          id="room-height"
+          label="Height"
+          value={height}
+          min={stepSize * 2}
+          max={maxSize}
+          step={stepSize}
+          onChange={setHeight}
+        />
+      </div>
+      <button className="generate-button" type="button" onClick={handleGenerate}>
+        <UpdateIcon width={18} height={18} /> Generate a layout{' '}
+        <span className="button-arrow" aria-hidden="true">
+          ↗
+        </span>
+      </button>
+      <p className="generate-caption">Find the right flow for your collection.</p>
+    </section>
+  );
+}
