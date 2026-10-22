@@ -52,6 +52,22 @@ texture changes, and responsive layouts in a browser. The 3D preview requires
 WebGL. The app loads fonts from Google Fonts; there are no other configured
 external services.
 
+## Gallery presets
+
+The canvas opens with **The Salon**, one of 20 hand-authored layouts. Browse Small,
+Medium, Large, or Grand to choose plans from 6 × 6 m to 30 × 24 m. Each card shows
+the actual floor plan, dimensions, area, and a short description. Selecting a plan
+loads it immediately in either preview mode and resets wall selections and finishes.
+
+The random generator remains available beside the canvas. Dimension sliders set up
+the next generated layout; the current plan stays intact until **Generate a layout**
+is clicked. Choose any preset again to restore its original walls and finishes.
+
+Preset definitions live in `src/presets/galleryPresets.ts`. Their wall coordinates
+use grid modules of `stepSize` meters. Thumbnails and previews share the same layout
+builder, including the centered entrance. Run `yarn test:presets` to check all 20
+plans for distinct geometry, bounds, entrances, reachability, and fresh copies.
+
 ## Project layout
 
 | Area                             | Location                              |

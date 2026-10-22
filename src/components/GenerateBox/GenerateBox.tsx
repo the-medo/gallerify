@@ -43,15 +43,18 @@ function DimensionControl({ id, label, value, min, max, step, onChange }: Dimens
 }
 
 export default function GenerateBox() {
-  const { stepSize, width, height, maxSize, setStepSize, setWidth, setHeight, handleGenerate } =
+  const { generatorSettings, maxSize, setStepSize, setWidth, setHeight, handleGenerate } =
     useStore();
+  const { stepSize, width, height } = generatorSettings;
   return (
     <section className="dimensions-section" aria-labelledby="dimensions-title">
       <div className="section-kicker">
-        <span>01</span> The dimensions
+        <span>01</span> The generator
       </div>
       <h2 id="dimensions-title">Shape your gallery.</h2>
-      <p className="section-description">Set the space around the art you love.</p>
+      <p className="section-description">
+        Want a surprise? Set your dimensions, then generate a new layout.
+      </p>
       <div className="dimension-fields">
         <DimensionControl
           id="step-size"
@@ -87,7 +90,7 @@ export default function GenerateBox() {
           ↗
         </span>
       </button>
-      <p className="generate-caption">Find the right flow for your collection.</p>
+      <p className="generate-caption">A fresh layout every time. Presets are always here.</p>
     </section>
   );
 }

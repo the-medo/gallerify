@@ -15,6 +15,7 @@
     "dev:down": "scripts/worktree-dev/gallerify-worktree-dev down",
     "dev:logs": "scripts/worktree-dev/gallerify-worktree-dev logs",
     "test:worktree": "node --test scripts/worktree-dev/worktree.test.mjs",
+    "test:presets": "node --test scripts/gallery-presets.test.mjs",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx,mjs --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
