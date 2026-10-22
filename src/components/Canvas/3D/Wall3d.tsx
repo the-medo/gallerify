@@ -1,30 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
 import { calculateAngle } from '../../../utils/functions.ts';
-import { ThreeEvent, useFrame, useLoader } from '@react-three/fiber';
+import { ThreeEvent, useLoader } from '@react-three/fiber';
 import { getTexture, wallTextureMap } from '../../../utils/textures.ts';
+import { getWallDimensions, WALL_THICKNESS } from '../../../utils/wallGeometry.ts';
 
 interface Wall3dProps {
   wallId: string;
 }
 
-interface WallData {
-  rotation: THREE.Euler;
-  position: THREE.Vector3;
-  length: number;
-}
-
 const Wall3d: React.FC<Wall3dProps> = ({ wallId }) => {
   const [hovered, setHovered] = useState(false);
-
   const meshRef = useRef<THREE.Mesh>(null!);
-  const wireframeMeshRef = useRef<THREE.Mesh>(null!);
 
   const wallTextureId = useStore((state) => state.walls[wallId].textureId);
-  const wallLine = useStore((state) => state.walls[wallId].line);
-
-  const stepSize = useStore((state) => state.stepSize);
+  const walls = useStore((state) => state.walls);
+  const wall = walls[wallId];
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
   const isSelected = useStore((state) => state.selectedWallIds[wallId]);
@@ -55,82 +47,38 @@ const Wall3d: React.FC<Wall3dProps> = ({ wallId }) => {
     [setSelectedWall, toggleSelectedWall, wallId],
   );
 
-  const wallData: WallData = useMemo(() => {
-    const { start, end } = wallLine;
-
-    const angle = calculateAngle(start, end);
-    const xWidthOffset = -width / 2;
-    const yHeightOffset = -height / 2;
-
-    const xRotationOffset = angle === 0 ? 0 : stepSize / 2;
-    const yRotationOffset = angle === 0 ? stepSize / 2 : 0;
-
-    const xOffset = xWidthOffset + xRotationOffset;
-    const yOffset = yHeightOffset + yRotationOffset;
-
-    const rotation: THREE.Euler = new THREE.Euler(0, angle, 0);
-    const position: THREE.Vector3 = new THREE.Vector3(start.x + xOffset, 1, start.y + yOffset);
-    const length = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
-
-    // console.log('Length: ', length, start, end, calculateAngle(start, end));
+  const wallData = useMemo(() => {
+    const { start, end } = wall.line;
+    const { length, center } = getWallDimensions(wall, walls);
 
     return {
-      rotation,
-      position,
+      rotation: new THREE.Euler(0, calculateAngle(start, end), 0),
+      position: new THREE.Vector3(center.x - width / 2, 1, center.y - height / 2),
       length,
     };
-  }, [height, stepSize, wallLine, width]);
+  }, [height, wall, walls, width]);
 
-  useEffect(() => {
-    const geometry = new THREE.BoxGeometry(0.25, 2.5, wallData.length + 0.25);
-
-    if (meshRef.current) {
-      meshRef.current.geometry = geometry;
-    }
-    if (wireframeMeshRef.current) {
-      wireframeMeshRef.current.geometry = geometry;
-    }
-  }, [wallData]);
-
-  useEffect(() => {
-    console.log('Wall texture', wallTexture);
-    if (meshRef.current) {
-      const material = meshRef.current.material as THREE.MeshStandardMaterial;
-      material.map = texture;
-      material.needsUpdate = true;
-    }
-  }, [texture, wallTexture]);
-
-  useFrame(() => {
-    if (meshRef.current && wireframeMeshRef.current) {
-      const material = meshRef.current.material as THREE.MeshStandardMaterial;
-      material.opacity = 1 - (isSelected ? 0.25 : 0) - (hovered ? 0.25 : 0);
-    }
-  });
+  // Shade the texture directly instead of blending a transparent wall over
+  // an identical black mesh, which makes their coplanar faces fight for depth.
+  const highlightColor = useMemo(
+    () => new THREE.Color().setScalar(1 - (isSelected ? 0.25 : 0) - (hovered ? 0.25 : 0)),
+    [hovered, isSelected],
+  );
 
   return (
-    <>
-      <mesh
-        ref={wireframeMeshRef}
-        receiveShadow
-        rotation={wallData.rotation}
-        position={wallData.position}
-      >
-        <meshBasicMaterial color="black" />
-      </mesh>
-      <mesh
-        castShadow
-        receiveShadow
-        ref={meshRef}
-        rotation={wallData.rotation}
-        position={wallData.position}
-        onPointerOver={onPointerOverHandler}
-        onPointerOut={() => setHovered(false)}
-        onClick={onClickHandler}
-      >
-        <meshStandardMaterial roughness={1} metalness={0} map={texture} transparent />
-      </mesh>
-    </>
+    <mesh
+      castShadow
+      receiveShadow
+      ref={meshRef}
+      rotation={wallData.rotation}
+      position={wallData.position}
+      onPointerOver={onPointerOverHandler}
+      onPointerOut={() => setHovered(false)}
+      onClick={onClickHandler}
+    >
+      <boxGeometry args={[WALL_THICKNESS, 2.5, wallData.length]} />
+      <meshStandardMaterial roughness={1} metalness={0} map={texture} color={highlightColor} />
+    </mesh>
   );
 };
 

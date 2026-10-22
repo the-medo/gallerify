@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
-import { useLoader, useThree } from '@react-three/fiber';
+import { useLoader } from '@react-three/fiber';
 
 interface Base3dProps {}
 
@@ -30,12 +30,6 @@ const Base3d: React.FC<Base3dProps> = () => {
 
     uvAttribute.needsUpdate = true;
   }, [width, height, meshRef]);
-
-  useThree(({ camera }) => {
-    camera.position.set(0, 4, 0);
-    // camera.rotation.set(THREE.MathUtils.degToRad(-45), 0, 0);
-    camera.rotation.set(0, 0, 0);
-  });
 
   return (
     <mesh receiveShadow ref={meshRef} rotation={[Math.PI * 1.5, 0, 0]}>

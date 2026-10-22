@@ -1,34 +1,50 @@
-import React, { useCallback } from 'react';
 import { wallTextureMap } from '../../utils/textures.ts';
 import TextureSelectorCard from './TextureSelectorCard.tsx';
 import { useStore } from '../../store/store.ts';
 
-interface TextureSelectorProps {}
-
-const TextureSelector: React.FC<TextureSelectorProps> = () => {
-  const textureMap = wallTextureMap;
+export default function TextureSelector() {
+  const previewMode = useStore((state) => state.previewMode);
   const setWallTexture = useStore((state) => state.setWallTexture);
-
-  const onTextureSelect = useCallback(
-    (textureId: string) => {
-      console.log('texture 2 - ', textureId);
-      setWallTexture(textureId);
-    },
-    [setWallTexture],
+  const selectedCount = useStore(
+    (state) => Object.keys(state.selectedWallIds).filter((id) => state.walls[id]).length,
   );
-
+  const selectedTexture = useStore((state) => {
+    const selected = Object.keys(state.selectedWallIds)
+      .map((id) => state.walls[id])
+      .filter(Boolean);
+    return selected.length && selected.every((wall) => wall.textureId === selected[0].textureId)
+      ? selected[0].textureId
+      : undefined;
+  });
   return (
-    <>
-      {Object.keys(textureMap).map((k) => (
-        <TextureSelectorCard
-          key={k}
-          textureId={k}
-          textureMap={textureMap}
-          onTextureSelect={onTextureSelect}
-        />
-      ))}
-    </>
+    <section className="materials-section" aria-label="Wall textures">
+      <div className="materials-heading">
+        <div className="section-kicker">
+          <span>03</span> The backdrop for your art
+        </div>
+        <span className="selection-count" aria-live="polite">
+          {previewMode === '2d'
+            ? 'Available in 3D'
+            : selectedCount
+            ? `${selectedCount} wall${selectedCount === 1 ? '' : 's'} selected`
+            : 'Select a wall to begin'}
+        </span>
+      </div>
+      <div className="texture-options">
+        {Object.keys(wallTextureMap).map((id) => (
+          <TextureSelectorCard
+            key={id}
+            textureId={id}
+            textureMap={wallTextureMap}
+            onTextureSelect={setWallTexture}
+            selected={selectedTexture === id}
+            disabled={previewMode !== '3d' || !selectedCount}
+          />
+        ))}
+      </div>
+      <p className="materials-caption">
+        Click a wall to select it. <kbd>Ctrl</kbd> + click to select more.
+      </p>
+    </section>
   );
-};
-
-export default TextureSelector;
+}

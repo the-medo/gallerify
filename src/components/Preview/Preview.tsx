@@ -1,38 +1,62 @@
-import React from 'react';
-import { Box } from '@radix-ui/themes';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store/store.ts';
 import Preview2d from './Preview2d.tsx';
 import Preview3d from './Preview3d.tsx';
 import TextureSelector from '../TextureSelector/TextureSelector.tsx';
 
-interface PreviewProps {}
-
-const Preview: React.FC<PreviewProps> = () => {
+export default function Preview() {
   const previewMode = useStore((state) => state.previewMode);
-
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
-  const squareSize = useStore((state) => state.squareSize);
+  const viewport = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 640, height: 440 });
+  useEffect(() => {
+    if (!viewport.current) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setSize({
+        width: Math.max(1, Math.floor(entry.contentRect.width)),
+        height: Math.max(1, Math.floor(entry.contentRect.height)),
+      });
+    });
+    observer.observe(viewport.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <Box p="3">
-      <Box
-        style={{
-          width: width * squareSize + 10 + 'px',
-          height: height * squareSize + 10 + 'px',
-          border: '5px solid var(--accent-11)',
-        }}
-      >
-        {previewMode === '2d' && <Preview2d />}
-        {previewMode === '3d' && (
-          <>
+    <section className="preview-panel" aria-label="Gallery preview">
+      <div className="preview-heading">
+        <div>
+          <span className="status-dot" />
+          <h2>Your gallery, in the making.</h2>
+        </div>
+        <span className="preview-mode-label">
+          {previewMode === '3d' ? 'Perspective / 3D' : 'Floor plan / 2D'}
+        </span>
+      </div>
+      <div className="canvas-stage">
+        <div className="stage-label">
+          <span className="stage-cross" aria-hidden="true">
+            +
+          </span>{' '}
+          {width} × {height} m
+        </div>
+        <div ref={viewport} className="canvas-viewport">
+          {previewMode === '2d' ? (
+            <Preview2d viewportWidth={size.width} viewportHeight={size.height} />
+          ) : (
             <Preview3d />
-            <TextureSelector />
-          </>
-        )}
-      </Box>
-    </Box>
+          )}
+        </div>
+        <div className="stage-caption">
+          <span>
+            {previewMode === '3d' ? 'Drag to orbit · Scroll to zoom' : 'Your gallery, from above'}
+          </span>
+          <span className="orientation-marker" aria-hidden="true">
+            N ↑
+          </span>
+        </div>
+      </div>
+      <TextureSelector />
+    </section>
   );
-};
-
-export default Preview;
+}

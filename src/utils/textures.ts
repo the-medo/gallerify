@@ -5,8 +5,8 @@ export const wallTextureMap: TextureUrlMap = {
   '2': '/src/assets/textures/wall/wall2.png',
   '3': '/src/assets/textures/wall/wall3.png',
   '4': '/src/assets/textures/wall/wall4.png',
-  '5': '/src/assets/textures/wall/wall5.png',
-  '6': '/src/assets/textures/wall/wall6.png',
+  '5': '/src/assets/textures/wall/wall5.jpg',
+  '6': '/src/assets/textures/wall/wall6.jpg',
   '7': '/src/assets/textures/wall/wall7.png',
   '8': '/src/assets/textures/wall/wall8.png',
 };

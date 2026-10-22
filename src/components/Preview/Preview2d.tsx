@@ -1,27 +1,44 @@
-import React from 'react';
 import { useStore } from '../../store/store.ts';
-import { Stage } from '@pixi/react';
+import { Container, Stage } from '@pixi/react';
 import Base from '../Canvas/2D/Base.tsx';
 import RoomLayout from '../Canvas/RoomLayout.tsx';
 
-interface Preview2dProps {}
+interface Preview2dProps {
+  viewportWidth: number;
+  viewportHeight: number;
+}
 
-const Preview2d: React.FC<Preview2dProps> = () => {
+export default function Preview2d({ viewportWidth, viewportHeight }: Preview2dProps) {
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
   const squareSize = useStore((state) => state.squareSize);
   const roomLayout = useStore((state) => state.roomLayout);
-
+  const scale = Math.max(
+    0.01,
+    Math.min(
+      (viewportWidth - 64) / (width * squareSize),
+      (viewportHeight - 64) / (height * squareSize),
+    ),
+  );
   return (
     <Stage
-      width={width * squareSize}
-      height={height * squareSize}
-      options={{ backgroundColor: 0xffffff }}
+      width={viewportWidth}
+      height={viewportHeight}
+      options={{
+        backgroundAlpha: 0,
+        antialias: true,
+        resolution: Math.min(window.devicePixelRatio, 2),
+        autoDensity: true,
+      }}
     >
-      <Base />
-      {roomLayout && <RoomLayout roomLayout={roomLayout} />}
+      <Container
+        x={(viewportWidth - width * squareSize * scale) / 2}
+        y={(viewportHeight - height * squareSize * scale) / 2}
+        scale={scale}
+      >
+        <Base />
+        {roomLayout && <RoomLayout roomLayout={roomLayout} />}
+      </Container>
     </Stage>
   );
-};
-
-export default Preview2d;
+}
