@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+REPOSITORY_DIR="$(cd -- "${SCRIPT_DIR}/../.." && pwd -P)"
+source "${SCRIPT_DIR}/runtime.sh"
+command -v flock >/dev/null || { echo 'Linux/WSL with flock (util-linux) is required.' >&2; exit 1; }
+GIT_COMMON_DIR="$(git -C "${REPOSITORY_DIR}" rev-parse --path-format=absolute --git-common-dir)"
+
+# Serialize allocation and lifecycle operations across this repository's worktrees.
+# Close the lock descriptor in Node so background servers cannot inherit it.
+exec flock --wait 30 --close "${GIT_COMMON_DIR}/gallerify-worktree-dev.lock" \
+  node "${SCRIPT_DIR}/cli.mjs" "$@"

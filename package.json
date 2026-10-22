@@ -3,10 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "yarn@1.22.22",
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "dev": "vite",
+    "dev:setup": "scripts/worktree-dev/bootstrap-worktree.sh",
+    "dev:up": "scripts/worktree-dev/gallerify-worktree-dev up",
+    "dev:status": "scripts/worktree-dev/gallerify-worktree-dev status",
+    "dev:down": "scripts/worktree-dev/gallerify-worktree-dev down",
+    "dev:logs": "scripts/worktree-dev/gallerify-worktree-dev logs",
+    "test:worktree": "node --test scripts/worktree-dev/worktree.test.mjs",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx,mjs --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {

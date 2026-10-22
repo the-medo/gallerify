@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Local development configuration and managed worktree state
+.env
+.env.*
+!.env.example
+.gallerify/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
