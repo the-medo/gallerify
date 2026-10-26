@@ -18,6 +18,12 @@ dist-ssr
 !.env.example
 .gallerify/
 
+# Texture binaries live in Cloudflare R2; keep only provenance in Git.
+src/assets/textures/**/*.png
+src/assets/textures/**/*.jpg
+src/assets/textures/**/*.jpeg
+src/assets/textures/**/*.webp
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

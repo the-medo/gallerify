@@ -4,6 +4,7 @@ import Preview2d from './Preview2d.tsx';
 import Preview3d from './Preview3d.tsx';
 import TextureSelector from '../TextureSelector/TextureSelector.tsx';
 import { galleryPresets } from '../../presets/galleryPresets.ts';
+import FloorTextureSelector from '../TextureSelector/FloorTextureSelector.tsx';
 
 export default function Preview() {
   const previewMode = useStore((state) => state.previewMode);
@@ -60,6 +61,7 @@ export default function Preview() {
         </div>
       </div>
       <TextureSelector />
+      <FloorTextureSelector />
     </section>
   );
 }

@@ -31,6 +31,7 @@ type State = {
   roomLayout: TRoomLayout | undefined;
   walls: Record<string, TWall>;
   selectedWallIds: Record<string, true | undefined>;
+  floorTextureId: string;
 };
 
 type Actions = {
@@ -43,6 +44,7 @@ type Actions = {
   setWall: (wallId: string, wallData: TWall) => void;
   setSelectedWall: (wallId: string) => void;
   setWallTexture: (textureId: string) => void;
+  setFloorTexture: (textureId: string) => void;
   handleGenerate: () => void;
   loadPreset: (presetId: string) => void;
 };
@@ -74,8 +76,11 @@ export const useStore = create<State & Actions>((set) => ({
   windowWidth: 1920,
   squareSize: DEFAULT_POINT_SIZE,
   selectedWallIds: {},
+  floorTextureId: '1',
 
   setPreviewMode: (mode: PreviewMode) => set(() => ({ previewMode: mode })),
+
+  setFloorTexture: (textureId: string) => set(() => ({ floorTextureId: textureId })),
 
   setStepSize: (sliderInput: number[]) =>
     set((state) => {
