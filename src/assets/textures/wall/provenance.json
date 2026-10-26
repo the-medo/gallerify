@@ -1,0 +1,117 @@
+{
+  "generator": "Built-in image_gen tool",
+  "created": "2026-10-22",
+  "purpose": "Original wall base-color textures for Gallerify. Each image represents 2 × 2 meters. Image binaries are hosted in Cloudflare R2; retired texture images are removed from Git.",
+  "assets": [
+    {
+      "id": "1",
+      "file": "chalk-plaster.webp",
+      "name": "Chalk plaster",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: clean chalk-white painted fine plaster, warm-neutral near-white, tiny irregular mineral grain and extremely subtle roller stipple, matte museum wall, mostly smooth with delicate realistic microtexture. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/chalk-plaster.webp",
+      "sha256": "4d81551b4cb28b6d7d661bff7a423b5cdc96a61605c477f8e8f273c78cb60cc6"
+    },
+    {
+      "id": "2",
+      "file": "ivory-limewash.webp",
+      "name": "Ivory limewash",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: warm ivory mineral limewash, gentle hand-brushed overlapping tonal veils in closely related cream shades, very subtle broad brush marks and fine powdery grain, clean matte artisanal finish. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/ivory-limewash.webp",
+      "sha256": "3427ace85f74d096e45997e2c9dd54d4c0486ed49388326c32970fc531186ff8"
+    },
+    {
+      "id": "3",
+      "file": "sand-plaster.webp",
+      "name": "Sand plaster",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: pale natural sand-colored lime plaster, warm beige with tiny fine aggregate grains and faint hand-troweled variation, refined smooth sandy mineral surface, matte architectural finish. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/sand-plaster.webp",
+      "sha256": "6954a0b05d4a738449293c892ebe8d6110444cb95f40cde9a4d76332660ca342"
+    },
+    {
+      "id": "4",
+      "file": "warm-concrete.webp",
+      "name": "Warm concrete",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: light warm-gray smooth architectural concrete, very fine cement grain and sparsely scattered tiny pores, subdued close-value tonal variation, no slab joints, no formwork lines, no tie holes, refined honed matte cement. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/warm-concrete.webp",
+      "sha256": "758376dafecf3a87c59c4432b6efd01b76d8c7618d75e269e068ca57f0b74164"
+    },
+    {
+      "id": "5",
+      "file": "honed-limestone.webp",
+      "name": "Honed limestone",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: honed pale buff limestone, delicate irregular cream and beige mineral flecks and tiny pores, subtle natural sedimentary variation without directional stripes or large veins, one continuous unjointed stone surface, matte. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/honed-limestone.webp",
+      "sha256": "18761004c89ed2637145c9549036fa25c86df2b8f4f2e99a8624c455b234f695"
+    },
+    {
+      "id": "6",
+      "file": "terracotta-clay.webp",
+      "name": "Terracotta clay",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: muted dusty terracotta clay plaster, earthy warm rose-brown natural pigment, subtle finely troweled surface and delicate clay grains, low-contrast variations, contemporary matte earthen wall finish. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/terracotta-clay.webp",
+      "sha256": "ab592ac8f8a2d6cc675c29cadb0ed8beaed9b4c3e0b227a62d81debfd99948e2"
+    },
+    {
+      "id": "7",
+      "file": "sage-plaster.webp",
+      "name": "Sage plaster",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: soft muted gray-sage mineral plaster, desaturated green with fine powdery lime grain and restrained hand-troweled movement, close-value natural pigment variations, clean sophisticated matte finish. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/sage-plaster.webp",
+      "sha256": "2bac976c1cb50a5d295759a8ee8fbb4a6489d2d6d96f7cedf0fd386ca3074472"
+    },
+    {
+      "id": "8",
+      "file": "charcoal-plaster.webp",
+      "name": "Charcoal plaster",
+      "tileSize": 2,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D art gallery wall. Create one production-quality 1024x1024 material texture, a straight-on orthographic scan of a 2 meter by 2 meter surface, filling the entire square edge to edge. Material: deep warm charcoal pigmented plaster, dark neutral gray rather than black, fine mineral grain and delicate subtle troweled mottling, matte clean gallery accent wall, sufficient fine detail in the dark surface without bright speckles. Physically believable fine surface detail, understated and appropriate as a backdrop for artworks. Perfectly flat diffuse illumination and consistent average color across the whole image, no baked directional light, no cast shadows, no highlights, no vignette, no gradients. Seamlessly tileable horizontally and vertically; opposite edges must match, fine stochastic detail with no obvious recurring focal marks. No room, corners, wall edges, floor, objects, border, text, labels, watermark, damage, cracks, stains, or dramatic cloudy patches. The output is ONLY the material surface.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/wall/charcoal-plaster.webp",
+      "sha256": "2d5024398a73b67a1729570a4a488c860566fcad6e6dc47d03e0615d037aaa61"
+    }
+  ],
+  "processing": "Encoded the original 1254 × 1254 RGB PNGs as WebP using cwebp -q 90 -m 6. No resizing, cropping, or color adjustments.",
+  "storage": {
+    "bucket": "gallerify",
+    "baseUrl": "https://pub-9fcd2b179c0a4d9ea04195aed388d9b6.r2.dev",
+    "manifestUrl": "https://pub-9fcd2b179c0a4d9ea04195aed388d9b6.r2.dev/textures/manifest.json"
+  }
+}

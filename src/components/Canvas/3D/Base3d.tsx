@@ -1,42 +1,40 @@
-import React, { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
-import { useLoader } from '@react-three/fiber';
+import { useLoader, useThree } from '@react-three/fiber';
+import { floorMaterials, FLOOR_TEXTURE_SIZE } from '../../../utils/textures.ts';
 
-interface Base3dProps {}
-
-const Base3d: React.FC<Base3dProps> = () => {
+export default function Base3d() {
   const meshRef = useRef<THREE.Mesh>(null!);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
-  const texture = useLoader(THREE.TextureLoader, '/src/assets/textures/wall/wall7.png');
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(1, 1);
+  const floorTextureId = useStore((state) => state.floorTextureId);
+  const material = floorMaterials[floorTextureId] ?? floorMaterials['1'];
+  const texture = useLoader(THREE.TextureLoader, material.url);
+  const gl = useThree((state) => state.gl);
 
-  useEffect(() => {
-    const mesh = meshRef.current;
-    if (!mesh) return;
+  useLayoutEffect(() => {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
+    texture.needsUpdate = true;
+  }, [gl, texture]);
 
-    const geometry = mesh.geometry as THREE.BufferGeometry;
-    const uvAttribute = geometry.attributes.uv;
-
-    for (let i = 0; i < uvAttribute.count; i++) {
-      // Calculate the new UVs based on the number of tiles
-      const u = (i % 2) * height;
-      const v = (Math.floor(i / 2) * width) / 2;
-      uvAttribute.setXY(i, u, v);
+  useLayoutEffect(() => {
+    const { position, uv } = meshRef.current.geometry.attributes;
+    // Measure both axes in meters so boards and tiles stay square when
+    // resizing a rectangular gallery. Anchor the pattern at the center.
+    for (let i = 0; i < position.count; i++) {
+      uv.setXY(i, position.getX(i) / FLOOR_TEXTURE_SIZE, position.getY(i) / FLOOR_TEXTURE_SIZE);
     }
-
-    uvAttribute.needsUpdate = true;
-  }, [width, height, meshRef]);
+    uv.needsUpdate = true;
+  }, [width, height]);
 
   return (
     <mesh receiveShadow ref={meshRef} rotation={[Math.PI * 1.5, 0, 0]}>
       <planeGeometry args={[width, height]} />
-      <meshStandardMaterial roughness={0.5} metalness={0} map={texture} />
+      <meshStandardMaterial roughness={material.roughness} metalness={0} map={texture} />
     </mesh>
   );
-};
-
-export default Base3d;
+}
