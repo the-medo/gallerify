@@ -5,6 +5,8 @@ import Preview3d from './Preview3d.tsx';
 import TextureSelector from '../TextureSelector/TextureSelector.tsx';
 import { galleryPresets } from '../../presets/galleryPresets.ts';
 import FloorTextureSelector from '../TextureSelector/FloorTextureSelector.tsx';
+import { PlayIcon } from '@radix-ui/react-icons';
+import GalleryWalk from '../Walking/GalleryWalk.tsx';
 
 export default function Preview() {
   const previewMode = useStore((state) => state.previewMode);
@@ -13,6 +15,7 @@ export default function Preview() {
   const activePresetId = useStore((state) => state.activePresetId);
   const activePreset = galleryPresets.find((preset) => preset.id === activePresetId);
   const viewport = useRef<HTMLDivElement>(null);
+  const [walking, setWalking] = useState(false);
   const [size, setSize] = useState({ width: 640, height: 440 });
   useEffect(() => {
     if (!viewport.current) return;
@@ -33,9 +36,19 @@ export default function Preview() {
           <span className="status-dot" />
           <h2 aria-live="polite">{activePreset?.name ?? 'Your generated gallery'}</h2>
         </div>
-        <span className="preview-mode-label">
-          {previewMode === '3d' ? 'Perspective / 3D' : 'Floor plan / 2D'}
-        </span>
+        <div>
+          <span className="preview-mode-label">
+            {previewMode === '3d' ? 'Perspective / 3D' : 'Floor plan / 2D'}
+          </span>
+          <button
+            type="button"
+            className="play-gallery-button"
+            onClick={() => setWalking(true)}
+            aria-haspopup="dialog"
+          >
+            <PlayIcon /> Play
+          </button>
+        </div>
       </div>
       <div className="canvas-stage">
         <div className="stage-label">
@@ -48,7 +61,7 @@ export default function Preview() {
           {previewMode === '2d' ? (
             <Preview2d viewportWidth={size.width} viewportHeight={size.height} />
           ) : (
-            <Preview3d />
+            <Preview3d paused={walking} />
           )}
         </div>
         <div className="stage-caption">
@@ -62,6 +75,12 @@ export default function Preview() {
       </div>
       <TextureSelector />
       <FloorTextureSelector />
+      {walking && (
+        <GalleryWalk
+          name={activePreset?.name ?? 'Your generated gallery'}
+          onExit={() => setWalking(false)}
+        />
+      )}
     </section>
   );
 }

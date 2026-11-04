@@ -1,0 +1,217 @@
+.play-gallery-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 12px;
+}
+.play-gallery-button:hover {
+  filter: brightness(1.1);
+}
+.gallery-walk {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--stage);
+  color: var(--ink);
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+.walk-scene {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+  cursor: grab;
+}
+.walk-scene:active {
+  cursor: grabbing;
+}
+.walk-toolbar,
+.walk-help {
+  position: absolute;
+  z-index: 1;
+  background: rgb(255 250 240 / 94%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgb(58 56 47 / 8%);
+}
+.walk-toolbar {
+  top: max(20px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  right: max(20px, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+}
+.walk-title,
+.walk-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.walk-eyebrow {
+  display: block;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.walk-title h2 {
+  margin: 2px 0 0;
+  font-family: var(--display-font);
+  font-size: 22px;
+  font-weight: 400;
+}
+.gallery-walk button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  font-size: 12px;
+}
+.gallery-walk button:hover:not(:disabled) {
+  background: var(--soft);
+}
+.gallery-walk button:disabled {
+  opacity: 0.65;
+}
+.walk-help {
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 40px);
+  padding: 12px 20px;
+  text-align: center;
+  font-size: 12px;
+}
+.walk-help p {
+  margin: 0 0 8px;
+}
+.walk-desktop-help > span {
+  padding: 0 8px;
+  color: var(--muted);
+}
+.walk-mouse-help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.walk-mouse-help button {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 10px;
+}
+.walk-crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translate(-50%, -50%);
+  background: #fffaf0;
+  border-radius: 50%;
+  box-shadow: 0 0 2px 1px rgb(58 56 47 / 45%);
+  pointer-events: none;
+}
+.walk-loading {
+  position: absolute;
+  inset: 45% 0 auto;
+  text-align: center;
+}
+.walk-touch-controls,
+.walk-touch-help {
+  display: none;
+}
+@media (pointer: coarse), (max-width: 640px) {
+  .preview-heading {
+    flex-wrap: wrap;
+  }
+  .walk-toolbar {
+    top: max(10px, env(safe-area-inset-top));
+    left: 10px;
+    right: 10px;
+    padding: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .walk-title h2 {
+    font-size: 18px;
+  }
+  .walk-actions {
+    gap: 6px;
+  }
+  .gallery-walk .walk-restart {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+  .walk-desktop-help,
+  .walk-mouse-help {
+    display: none;
+  }
+  .walk-touch-help {
+    display: block;
+  }
+  .walk-help {
+    bottom: max(14px, env(safe-area-inset-bottom));
+    padding: 10px 12px;
+    font-size: 10px;
+  }
+  .walk-help p {
+    margin: 0;
+  }
+  .walk-touch-controls {
+    position: absolute;
+    bottom: max(68px, calc(env(safe-area-inset-bottom) + 54px));
+    left: max(20px, env(safe-area-inset-left));
+    display: grid;
+    grid-template-columns: repeat(3, 48px);
+    grid-template-rows: repeat(2, 48px);
+    gap: 6px;
+  }
+  .walk-touch-controls button {
+    font-size: 23px;
+    background: rgb(255 250 240 / 94%);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .walk-forward {
+    grid-column: 2;
+  }
+  .walk-left {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .walk-backward {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .walk-right {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}

@@ -8,9 +8,10 @@ import { getWallDimensions, WALL_THICKNESS } from '../../../utils/wallGeometry.t
 
 interface Wall3dProps {
   wallId: string;
+  interactive?: boolean;
 }
 
-const Wall3d: React.FC<Wall3dProps> = ({ wallId }) => {
+const Wall3d: React.FC<Wall3dProps> = ({ wallId, interactive = true }) => {
   const [hovered, setHovered] = useState(false);
   const meshRef = useRef<THREE.Mesh>(null!);
 
@@ -89,8 +90,11 @@ const Wall3d: React.FC<Wall3dProps> = ({ wallId }) => {
   // Shade the texture directly instead of blending a transparent wall over
   // an identical black mesh, which makes their coplanar faces fight for depth.
   const highlightColor = useMemo(
-    () => new THREE.Color().setScalar(1 - (isSelected ? 0.25 : 0) - (hovered ? 0.25 : 0)),
-    [hovered, isSelected],
+    () =>
+      new THREE.Color().setScalar(
+        interactive ? 1 - (isSelected ? 0.25 : 0) - (hovered ? 0.25 : 0) : 1,
+      ),
+    [hovered, isSelected, interactive],
   );
 
   return (
@@ -100,9 +104,9 @@ const Wall3d: React.FC<Wall3dProps> = ({ wallId }) => {
       ref={meshRef}
       rotation={wallData.rotation}
       position={wallData.position}
-      onPointerOver={onPointerOverHandler}
-      onPointerOut={() => setHovered(false)}
-      onClick={onClickHandler}
+      onPointerOver={interactive ? onPointerOverHandler : undefined}
+      onPointerOut={interactive ? () => setHovered(false) : undefined}
+      onClick={interactive ? onClickHandler : undefined}
     >
       <boxGeometry args={[WALL_THICKNESS, 2.5, wallData.length]} />
       <meshStandardMaterial roughness={1} metalness={0} map={texture} color={highlightColor} />
