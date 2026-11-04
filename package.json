@@ -14,12 +14,16 @@
     "dev:status": "scripts/worktree-dev/gallerify-worktree-dev status",
     "dev:down": "scripts/worktree-dev/gallerify-worktree-dev down",
     "dev:logs": "scripts/worktree-dev/gallerify-worktree-dev logs",
-    "test:worktree": "node --test scripts/worktree-dev/worktree.test.mjs",
+    "test:worktree": "node --test scripts/worktree-dev/*.test.mjs",
     "test:presets": "node --test scripts/gallery-presets.test.mjs",
     "test:walking": "node --test scripts/gallery-walking.test.mjs",
-    "build": "tsc && vite build",
+    "build": "tsc && tsc -p tsconfig.node.json && vite build",
     "lint": "eslint . --ext ts,tsx,mjs --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "NODE_ENV=production node --env-file-if-exists=.env.local server/index.ts",
+    "auth:migrate": "node --env-file-if-exists=.env.local server/migrate.ts",
+    "auth:plan": "node --env-file-if-exists=.env.local server/migrate.ts --plan",
+    "test:auth": "node --test server/*.test.ts"
   },
   "dependencies": {
     "@pixi/react": "^7.1.1",
@@ -27,26 +31,29 @@
     "@radix-ui/themes": "^2.0.0",
     "@react-three/drei": "^9.88.13",
     "@react-three/fiber": "^8.15.10",
+    "better-auth": "1.7.17",
     "pixi.js": "^7.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "sirv": "^3.0.2",
     "three": "^0.158.0",
     "zustand": "^4.4.6"
   },
   "devDependencies": {
+    "@types/node": "^24",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/three": "^0.158.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "@vitejs/plugin-react": "^4.0.3",
+    "@vitejs/plugin-react": "^6.2.1",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "prettier": "^3.0.3",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "typescript": "^5.9.3",
+    "vite": "^8.3.5"
   }
 }

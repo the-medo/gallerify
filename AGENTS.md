@@ -2,9 +2,10 @@
 
 ## Repository overview
 
-Gallerify is a frontend-only gallery layout builder: React 18, TypeScript, Vite,
-Zustand, Pixi.js for 2D, and React Three Fiber/Three.js for 3D. There is no backend,
-database, authentication, migration system, or required external credential.
+Gallerify is a gallery layout builder: React 18, TypeScript, Vite, Zustand,
+Pixi.js for 2D, and React Three Fiber/Three.js for 3D. Better Auth runs on Node 24
+with SQLite, supporting email/password accounts and optional Google sign-in.
+Read `docs/accounts.md` for environment, migrations, and deployment details.
 
 | Area                               | Location                                         |
 | ---------------------------------- | ------------------------------------------------ |
@@ -15,6 +16,8 @@ database, authentication, migration system, or required external credential.
 | Geometry, textures, types          | `src/utils/`                                     |
 | Artwork and textures               | `src/assets/` (retain adjacent provenance files) |
 | Local worktree lifecycle           | `scripts/worktree-dev/`                          |
+| Authentication backend            | `server/`                                        |
+| Account UI and client              | `src/components/Account/`, `src/lib/auth-client.ts` |
 
 ## Worktree development
 
@@ -48,11 +51,15 @@ scripts/worktree-dev/gallerify-worktree-dev down
 Read [the worktree guide](scripts/worktree-dev/README.md) before changing lifecycle
 tooling. Bootstrap installs dependencies and performs idempotent setup; it does
 not start the application. `up` binds Vite to loopback with a worktree-specific
-port. Use the URL reported by `status`, not an assumed default port.
+port. `status` reports the internal listener. For remote access, use the configured
+Tailscale HTTPS origin and set `BETTER_AUTH_URL` to that browser-facing origin.
 
 `.env.local`, `.env.worktree`, and `.gallerify/` are local state. Do not commit or
-copy them between worktrees. Setup creates `.env.local` from `.env.example` only
-when missing and preserves developer edits. Add any future env contract to the
+copy whole files between worktrees. Setup creates `.env.local` from `.env.example`
+only when missing and preserves developer edits. As explicitly requested by the
+user, setup inherits only `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from the
+main checkout when both local values are empty. Preserve a custom/partial pair;
+never copy auth secrets, databases, ports, or other settings. Add any future env contract to the
 example and docs; never put secrets in browser-visible `VITE_*` variables.
 
 Use `down` before removing or relocating a worktree. Stop only processes owned by
@@ -61,6 +68,9 @@ the current worktree; avoid broad process kills or cleanup of another worktree.
 ## Validation and delivery
 
 - For source, configuration, or tooling changes, run `yarn lint` and `yarn build`.
+- For authentication changes, run `yarn test:auth`. Keep the SQLite database and
+  secrets out of Git and browser-served files. Never copy `.gallerify/` across
+  worktrees. Google credentials are server-only; live Google tests need a client.
 - For worktree lifecycle, env, port, or process-ownership changes, also run Bash
   syntax checks and `yarn test:worktree` as described in the worktree guide.
 - For UI/rendering changes, verify generation, 2D/3D switching, wall selection,

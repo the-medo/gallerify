@@ -17,6 +17,7 @@ import { createServer } from 'node:net';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
+import { syncGoogleEnv } from './google-env.mjs';
 
 const root = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
 const id = createHash('sha256').update(root).digest('hex').slice(0, 12);
@@ -107,6 +108,10 @@ async function setup() {
   } catch (error) {
     if (error.code !== 'EEXIST') throw error;
   }
+  const commonGitDir = execFileSync('git', ['-C', root, 'rev-parse', '--git-common-dir'], {
+    encoding: 'utf8',
+  }).trim();
+  syncGoogleEnv(dirname(resolve(root, commonGitDir)), root);
   let settings = config();
   if (!settings) {
     const worktrees = execFileSync('git', ['-C', root, 'worktree', 'list', '--porcelain', '-z'], {
