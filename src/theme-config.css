@@ -524,10 +524,10 @@ h2 {
 .texture-option:disabled {
   opacity: 0.7;
 }
-.texture-number {
+.texture-name {
   display: block;
-  font-size: 8px;
-  letter-spacing: 0.1em;
+  font-size: 10px;
+  line-height: 1.35;
   color: var(--muted);
   margin-top: 5px;
 }
@@ -870,6 +870,7 @@ kbd {
     max-width: 560px;
   }
   .texture-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 5px;
   }
   .selection-count {

@@ -4,6 +4,7 @@ import { CheckIcon } from '@radix-ui/react-icons';
 interface TextureSelectorCardProps {
   textureMap: TextureUrlMap;
   textureId: string;
+  name: string;
   onTextureSelect: (textureId: string) => void;
   selected: boolean;
   disabled: boolean;
@@ -12,6 +13,7 @@ interface TextureSelectorCardProps {
 export default function TextureSelectorCard({
   textureMap,
   textureId,
+  name,
   onTextureSelect,
   selected,
   disabled,
@@ -20,21 +22,21 @@ export default function TextureSelectorCard({
     <button
       className="texture-option"
       type="button"
-      aria-label={`Texture ${textureId}`}
+      aria-label={name}
       aria-pressed={selected}
       disabled={disabled}
       onClick={() => onTextureSelect(textureId)}
-      title={`Apply texture ${textureId}`}
+      title={`Apply ${name.toLowerCase()}`}
     >
       <span className="texture-image">
-        <img src={getTexture(textureMap, textureId)} alt={`Texture ${textureId}`} />
+        <img src={getTexture(textureMap, textureId)} crossOrigin="anonymous" alt="" />
         {selected && (
           <span className="texture-check">
             <CheckIcon />
           </span>
         )}
       </span>
-      <span className="texture-number">0{textureId}</span>
+      <span className="texture-name">{name}</span>
     </button>
   );
 }

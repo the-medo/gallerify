@@ -1,0 +1,125 @@
+{
+  "generator": "Built-in image_gen tool",
+  "created": "2026-10-22",
+  "purpose": "Original floor base-color textures for Gallerify. Each image represents 2 × 2 meters. Image binaries are hosted in Cloudflare R2; retired texture images are removed from Git.",
+  "processing": "Encoded original RGB PNGs as WebP using cwebp -q 90 -m 6. No resizing, cropping, or color adjustments.",
+  "assets": [
+    {
+      "id": "1",
+      "file": "natural-oak.webp",
+      "name": "Natural oak",
+      "tileSize": 2,
+      "roughness": 0.75,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D gallery floor. Generate one realistic 1024x1024 material texture, an orthographic overhead scan of a 2 meter by 2 meter surface, filling the square edge to edge. Material: natural European oak floorboards, warm light honey-beige, ten parallel vertical planks each 20cm wide, very narrow subtle straight seams, staggered horizontal end joints, quiet straight wood grain with very occasional small knots, low-gloss oil finish, believable fine pores, board color variation kept subtle. Finely detailed real architectural material, restrained variation appropriate for an art gallery. Flat diffuse illumination with consistent average brightness across the image; no directional lighting, no cast shadows, no reflections, no vignette or perspective. Seamlessly repeatable in both directions: all pattern lines, joints, colors and grain crossing one edge must continue at the opposite edge. Surface only, no room, furniture, rug, objects, borders, text, watermark, damage or dirt. No dramatic recurring focal marks.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/natural-oak.webp",
+      "sha256": "70188b878e19fa89d7063eabe3c30ae3bdf5dcee03b83d8287d5550a256bcd84"
+    },
+    {
+      "id": "2",
+      "file": "walnut-boards.webp",
+      "name": "Walnut boards",
+      "tileSize": 2,
+      "roughness": 0.7,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D gallery floor. Generate one realistic 1024x1024 material texture, an orthographic overhead scan of a 2 meter by 2 meter surface, filling the square edge to edge. Material: American walnut floorboards, deep warm medium brown with natural darker linear grain, ten parallel vertical boards each 20cm wide, narrow straight seams, staggered end joints, refined satin-matte finish without reflected light, subtle board-to-board variations, no large knots. Finely detailed real architectural material, restrained variation appropriate for an art gallery. Flat diffuse illumination with consistent average brightness across the image; no directional lighting, no cast shadows, no reflections, no vignette or perspective. Seamlessly repeatable in both directions: all pattern lines, joints, colors and grain crossing one edge must continue at the opposite edge. Surface only, no room, furniture, rug, objects, borders, text, watermark, damage or dirt. No dramatic recurring focal marks.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/walnut-boards.webp",
+      "sha256": "db0436d90aa944b08df5189dc78a073bb8a79190f61c25c8dd9cc1b22084baee"
+    },
+    {
+      "id": "3",
+      "file": "pale-ash.webp",
+      "name": "Pale ash",
+      "tileSize": 2,
+      "roughness": 0.78,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D gallery floor. Generate one realistic 1024x1024 material texture, an orthographic overhead scan of a 2 meter by 2 meter surface, filling the square edge to edge. Material: pale ash wood floorboards, light neutral cream with delicate gray-beige straight grain, ten parallel vertical boards each 20cm wide, tiny fine pores, narrow seams and staggered horizontal end joints, clean matte finish, understated natural wood color variation, no orange or yellow stain, no knots. Finely detailed real architectural material, restrained variation appropriate for an art gallery. Flat diffuse illumination with consistent average brightness across the image; no directional lighting, no cast shadows, no reflections, no vignette or perspective. Seamlessly repeatable in both directions: all pattern lines, joints, colors and grain crossing one edge must continue at the opposite edge. Surface only, no room, furniture, rug, objects, borders, text, watermark, damage or dirt. No dramatic recurring focal marks.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/pale-ash.webp",
+      "sha256": "1ec16b2f242ff631b252ab3d31456aefd31c11343e21ae40c452f1d889965027"
+    },
+    {
+      "id": "4",
+      "file": "soft-concrete.webp",
+      "name": "Soft concrete",
+      "tileSize": 2,
+      "roughness": 0.85,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D gallery floor. Generate one realistic 1024x1024 material texture, an orthographic overhead scan of a 2 meter by 2 meter surface, filling the square edge to edge. Material: continuous warm light-gray microcement flooring, smooth fine cement grain and scattered tiny mineral pores, restrained low-contrast hand-troweled variation, refined matte finish, no slab joints or formwork marks, no cracks. Finely detailed real architectural material, restrained variation appropriate for an art gallery. Flat diffuse illumination with consistent average brightness across the image; no directional lighting, no cast shadows, no reflections, no vignette or perspective. Seamlessly repeatable in both directions: all pattern lines, joints, colors and grain crossing one edge must continue at the opposite edge. Surface only, no room, furniture, rug, objects, borders, text, watermark, damage or dirt. No dramatic recurring focal marks.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/soft-concrete.webp",
+      "sha256": "48f768256ca92a4f21aa490c2256f56244179246035b94def0759d083cc0f6dc"
+    },
+    {
+      "id": "5",
+      "file": "ivory-terrazzo.webp",
+      "name": "Ivory terrazzo",
+      "tileSize": 2,
+      "roughness": 0.65,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D gallery floor. Generate one realistic 1024x1024 material texture, an orthographic overhead scan of a 2 meter by 2 meter surface, filling the square edge to edge. Material: fine-grain ivory terrazzo floor, warm off-white matrix with abundant small irregular stone chips in muted cream, light beige, soft gray and occasional charcoal, chips mostly 3mm to 12mm at this 2m scale, evenly distributed but naturally random, honed finish, continuous seamless surface without grout joints, not oversized confetti. Finely detailed real architectural material, restrained variation appropriate for an art gallery. Flat diffuse illumination with consistent average brightness across the image; no directional lighting, no cast shadows, no reflections, no vignette or perspective. Seamlessly repeatable in both directions: all pattern lines, joints, colors and grain crossing one edge must continue at the opposite edge. Surface only, no room, furniture, rug, objects, borders, text, watermark, damage or dirt. No dramatic recurring focal marks.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/ivory-terrazzo.webp",
+      "sha256": "847c72dcd41c1a0c624eeeb427801b7fae84ae99d50533f6972f5041fb14c445"
+    },
+    {
+      "id": "6",
+      "file": "limestone-tiles.webp",
+      "name": "Limestone tiles",
+      "tileSize": 2,
+      "roughness": 0.82,
+      "prompt": "Use case: photorealistic-natural. Create a seamless repeating square color texture for a 3D art gallery floor: pale beige honed limestone square tiles with tiny natural pores and mineral speckles. Orthographic top-down material scan, no perspective, perfectly even diffuse illumination. Critical grid composition: FOUR evenly spaced vertical grout lines and FOUR evenly spaced horizontal grout lines, at 12.5%, 37.5%, 62.5% and 87.5% of the image. Thus the image edges cut exactly through the MIDDLES of tiles, leaving HALF-width tiles at both left and right and HALF-height tiles at both top and bottom. NO grout line near or along any outer image edge. Opposite half tiles must match tone and texture, so joining two image copies reconstructs a complete normal square tile with no border or extra seam. Tile spacing uniform, joints thin pale cream, tile colors almost uniform warm beige with only subtle natural variation. Entire square is continuous floor surface, photorealistic, refined honed matte finish, no objects, borders, text, reflections or shading gradients. Represents a two-meter square, repeatable horizontally and vertically.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/limestone-tiles.webp",
+      "sha256": "8a819aa0a084954848dace6c5f142bb39d68ec5a89b6fcc6ac77aca07b91c729"
+    },
+    {
+      "id": "7",
+      "file": "terracotta-tiles.webp",
+      "name": "Terracotta tiles",
+      "tileSize": 2,
+      "roughness": 0.92,
+      "prompt": "Use case: photorealistic-natural. Create a seamlessly repeating square color map of terracotta tile flooring for a 3D gallery. Real matte fired clay, muted burnt orange and warm earthy red, delicate natural surface grain. Orthographic overhead material scan, perfectly even diffuse lighting. Exact grid: SIX evenly spaced vertical grout lines and SIX evenly spaced horizontal grout lines at 8.33%, 25%, 41.67%, 58.33%, 75%, 91.67% of the image. Outer boundaries MUST cut through the MIDDLES of tiles, giving HALF a tile at each outer edge and quarter tiles at corners. NO grout lines running along image boundaries, NO thin partial-tile slivers, NO framing border. Opposite half tiles must match colors and grain so repeating the image reconstructs full square tiles without visible seams. Uniform square tiles with very subtle handmade edges, narrow warm beige grout, restrained tile-to-tile color variation. No room, text, watermark, objects, perspective, shadows, reflections, vignette or lighting gradients. One two-meter square texture, seamless horizontal and vertical repeat.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/terracotta-tiles.webp",
+      "sha256": "3708d4b9a9c89bd2e0ff87d209a4ce732521576b85d6170df60fc203c11bbaae"
+    },
+    {
+      "id": "8",
+      "file": "charcoal-slate.webp",
+      "name": "Charcoal slate",
+      "tileSize": 2,
+      "roughness": 0.9,
+      "prompt": "Use case: photorealistic-natural. Asset type: seamless square base-color texture for a 3D gallery floor. Generate one realistic 1024x1024 material texture, an orthographic overhead scan of a 2 meter by 2 meter surface, filling the square edge to edge. Material: dark charcoal natural slate floor tiles in a precise square grid, four equal 50cm tiles across and four down, narrow muted gray 3mm grout lines, center half-width grout on all four boundaries for continuous tileable joints, subdued fine natural stone cleft texture in close shades of neutral dark gray, flat matte stone with restrained tile-to-tile variation, no white veins. Finely detailed real architectural material, restrained variation appropriate for an art gallery. Flat diffuse illumination with consistent average brightness across the image; no directional lighting, no cast shadows, no reflections, no vignette or perspective. Seamlessly repeatable in both directions: all pattern lines, joints, colors and grain crossing one edge must continue at the opposite edge. Surface only, no room, furniture, rug, objects, borders, text, watermark, damage or dirt. No dramatic recurring focal marks.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "objectKey": "textures/floor/charcoal-slate.webp",
+      "sha256": "3f01953f4788163cc635a32e29b3ae14f88bdd5f6bdca0e48e516dff8ce44119"
+    }
+  ],
+  "storage": {
+    "bucket": "gallerify",
+    "baseUrl": "https://pub-9fcd2b179c0a4d9ea04195aed388d9b6.r2.dev",
+    "manifestUrl": "https://pub-9fcd2b179c0a4d9ea04195aed388d9b6.r2.dev/textures/manifest.json"
+  }
+}

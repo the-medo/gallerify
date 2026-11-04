@@ -1,4 +1,4 @@
-import { wallTextureMap } from '../../utils/textures.ts';
+import { wallMaterials, wallTextureMap } from '../../utils/textures.ts';
 import TextureSelectorCard from './TextureSelectorCard.tsx';
 import { useStore } from '../../store/store.ts';
 
@@ -35,6 +35,7 @@ export default function TextureSelector() {
           <TextureSelectorCard
             key={id}
             textureId={id}
+            name={wallMaterials[id].name}
             textureMap={wallTextureMap}
             onTextureSelect={setWallTexture}
             selected={selectedTexture === id}

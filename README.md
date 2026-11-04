@@ -49,8 +49,8 @@ yarn test:worktree  # Linux/WSL lifecycle integration checks
 
 For UI changes, also check layout generation, 2D/3D switching, wall selection,
 texture changes, and responsive layouts in a browser. The 3D preview requires
-WebGL. The app loads fonts from Google Fonts; there are no other configured
-external services.
+WebGL. The app loads fonts from Google Fonts and wall/floor textures from the
+public Cloudflare R2 bucket, so those assets require network access.
 
 ## Gallery presets
 
@@ -81,3 +81,11 @@ plans for distinct geometry, bounds, entrances, reachability, and fresh copies.
 | Local development tooling        | `scripts/worktree-dev/`               |
 
 Original palette reference: [Realtime Colors](https://www.realtimecolors.com/?colors=081609-f8fcf8-302c77-d6f0d7-b64943&fonts=Poppins-Poppins).
+
+## Asset storage
+
+The app loads all 16 wall and floor textures from the `gallerify` Cloudflare R2
+bucket. Texture images are excluded from Git; generation provenance remains in
+`src/assets/textures/`. Set the optional `VITE_ASSET_BASE_URL` at build time to use
+a custom asset domain. See [asset storage](docs/storage.md) for URLs, browser
+access, upload conventions, and production delivery setup.
