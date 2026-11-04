@@ -22,10 +22,15 @@ function RoomCamera() {
   return <CameraControls ref={controls} makeDefault minDistance={2} maxDistance={150} />;
 }
 
-export default function Preview3d() {
+export default function Preview3d({ paused = false }: { paused?: boolean }) {
   const roomLayout = useStore((state) => state.roomLayout);
   return (
-    <Canvas shadows camera={{ fov: 42, position: [15, 16, 15], near: 0.1, far: 250 }} dpr={[1, 2]}>
+    <Canvas
+      shadows
+      camera={{ fov: 42, position: [15, 16, 15], near: 0.1, far: 250 }}
+      dpr={[1, 2]}
+      frameloop={paused ? 'never' : 'always'}
+    >
       <ambientLight intensity={Math.PI * 0.4} />
       <pointLight castShadow position={[1, 4, 1]} decay={0} intensity={Math.PI * 0.3} />
       <Base3d />

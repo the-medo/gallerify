@@ -68,6 +68,23 @@ use grid modules of `stepSize` meters. Thumbnails and previews share the same la
 builder, including the centered entrance. Run `yarn test:presets` to check all 20
 plans for distinct geometry, bounds, entrances, reachability, and fresh copies.
 
+## Walk through your gallery
+
+Click **Play** beside the preview title in either 2D or 3D. The gallery opens in a
+full-window view at eye level, starting just inside the entrance and facing inward.
+The current layout and wall/floor finishes carry into the walk.
+
+- **WASD / arrow keys** move; **Q / E** turn. Drag the view to look around, or choose
+  **Enable mouse look** for free mouse movement. **Esc** releases the captured mouse;
+  outside mouse capture, **Esc** or **Exit** returns to the editor.
+- On touch screens, hold the direction buttons to move and drag the scene to look.
+- Walls block movement, and the floor boundary keeps you inside the gallery.
+- **Back to entrance** resets your position and view. Each new Play starts there too.
+
+Generated layouts start at the front of the gallery, using a clear spot beside any
+central partition. Walking does not edit the layout or change wall selections.
+Run `yarn test:walking` for entrance and collision checks.
+
 ## Project layout
 
 | Area                             | Location                              |
