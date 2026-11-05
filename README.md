@@ -1,8 +1,9 @@
 # Gallerify
 
 A gallery layout builder with interactive 2D and 3D previews. Built with React,
-TypeScript, Vite, Zustand, Pixi.js, and React Three Fiber. It currently has no
-backend, database, authentication, or required API keys.
+TypeScript, Vite, Zustand, Pixi.js, and React Three Fiber. Better Auth provides
+Google and email/password accounts through a Node.js backend and SQLite.
+See [user accounts](docs/accounts.md) for Google setup and production hosting.
 
 ## Local development
 
@@ -22,7 +23,8 @@ scripts/worktree-dev/gallerify-worktree-dev status
 
 Bootstrap installs the locked dependencies, creates `.env.local` from
 `.env.example` if missing, and assigns a local port. It does not start the app.
-`up` starts Vite in the background and prints this worktree's URL.
+`up` starts Vite and the auth backend in one process and prints this worktree's
+URL. Accounts persist locally; Google sign-in needs OAuth client credentials.
 
 ```bash
 yarn dev:logs    # Last 80 log lines
@@ -44,6 +46,7 @@ independent of the worktree launcher and does not load `.env.worktree`.
 ```bash
 yarn lint
 yarn build
+yarn test:auth      # Accounts, sessions, OAuth setup, and security checks
 yarn test:worktree  # Linux/WSL lifecycle integration checks
 ```
 
@@ -96,6 +99,8 @@ Run `yarn test:walking` for entrance and collision checks.
 | Geometry, textures, shared types | `src/utils/`                          |
 | Artwork, branding, textures      | `src/assets/`                         |
 | Local development tooling        | `scripts/worktree-dev/`               |
+| Authentication backend           | `server/`                             |
+| Account UI and auth client       | `src/components/Account/`, `src/lib/auth-client.ts` |
 
 Original palette reference: [Realtime Colors](https://www.realtimecolors.com/?colors=081609-f8fcf8-302c77-d6f0d7-b64943&fonts=Poppins-Poppins).
 

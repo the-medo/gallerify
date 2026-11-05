@@ -6,6 +6,7 @@ import Turn3dBox from './components/GenerateBox/Turn3dBox.tsx';
 import GalleryArtwork from './components/GalleryArtwork/GalleryArtwork.tsx';
 import gallerifyMark from './assets/brand/gallerify-mark.png';
 import PresetSelector from './components/PresetSelector/PresetSelector.tsx';
+import Account from './components/Account/Account.tsx';
 
 function App() {
   const setWindowWidth = useStore((state) => state.setWindowWidth);
@@ -28,9 +29,7 @@ function App() {
             </span>
           </a>
           <span className="header-caption">Art deserves a place of its own.</span>
-          <span className="studio-badge">
-            <span className="status-dot" /> Gallery builder
-          </span>
+          <Account />
         </header>
 
         <main id="main">

@@ -17,6 +17,10 @@ dist-ssr
 .env.*
 !.env.example
 .gallerify/
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
 
 # Texture binaries live in Cloudflare R2; keep only provenance in Git.
 src/assets/textures/**/*.png
