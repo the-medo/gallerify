@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { readArtworkStorageConfig } from './artwork-storage.ts';
 
 export function readAuthConfig(
   env: Record<string, string | undefined>,
@@ -46,6 +47,7 @@ export function readAuthConfig(
     baseURL: url.origin,
     secret,
     databasePath,
+    artworkStorage: readArtworkStorageConfig(env, root, databasePath),
     // Cookies are shared across ports. Each local checkout needs its own names.
     cookiePrefix: production
       ? 'gallerify'

@@ -1,27 +1,13 @@
-import React from 'react';
-import { TRoom, TWall } from '../../utils/types.ts';
+import type { TRoom } from '../../utils/types.ts';
 import Wall2d from './2D/Wall2d.tsx';
-import Wall3d from './3D/Wall3d.tsx';
-import { useStore } from '../../store/store.ts';
 
-interface RoomProps {
-  room: TRoom;
-}
-
-const Room: React.FC<RoomProps> = ({ room }) => {
-  const previewMode = useStore((state) => state.previewMode);
-
+// The 3D editor and walking view share GalleryScene; this is the 2D floor plan.
+export default function Room({ room }: { room: TRoom }) {
   return (
     <>
-      {room.walls.map((wall: TWall) => {
-        if (previewMode === '2d') {
-          return <Wall2d key={wall.id} wall={wall} />;
-        } else {
-          return <Wall3d key={wall.id} wallId={wall.id} />;
-        }
-      })}
+      {room.walls.map((wall) => (
+        <Wall2d key={wall.id} wall={wall} />
+      ))}
     </>
   );
-};
-
-export default Room;
+}

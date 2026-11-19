@@ -1,5 +1,5 @@
 import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useStore } from '../../../store/store.ts';
+import type { TWall, WallMap } from '../../../utils/types.ts';
 import * as THREE from 'three';
 import { calculateAngle } from '../../../utils/functions.ts';
 import { ThreeEvent, useLoader, useThree } from '@react-three/fiber';
@@ -7,23 +7,27 @@ import { getTexture, wallTextureMap, WALL_TEXTURE_SIZE } from '../../../utils/te
 import { getWallDimensions, WALL_THICKNESS } from '../../../utils/wallGeometry.ts';
 
 interface Wall3dProps {
-  wallId: string;
-  interactive?: boolean;
+  wall: TWall;
+  walls: WallMap;
+  width: number;
+  height: number;
+  selected?: boolean;
+  onClick?: (event: ThreeEvent<MouseEvent>) => void;
 }
 
-const Wall3d: React.FC<Wall3dProps> = ({ wallId, interactive = true }) => {
+const Wall3d: React.FC<Wall3dProps> = ({
+  wall,
+  walls,
+  width,
+  height,
+  selected = false,
+  onClick,
+}) => {
   const [hovered, setHovered] = useState(false);
   const meshRef = useRef<THREE.Mesh>(null!);
-
-  const wallTextureId = useStore((state) => state.walls[wallId].textureId);
-  const walls = useStore((state) => state.walls);
-  const wall = walls[wallId];
-  const width = useStore((state) => state.width);
-  const height = useStore((state) => state.height);
-  const isSelected = useStore((state) => state.selectedWallIds[wallId]);
-  const toggleSelectedWall = useStore((state) => state.toggleSelectedWall);
-  const setSelectedWall = useStore((state) => state.setSelectedWall);
-
+  const interactive = Boolean(onClick);
+  const wallTextureId = wall.textureId;
+  const isSelected = selected;
   const wallTexture = getTexture(wallTextureMap, wallTextureId);
   const texture = useLoader(THREE.TextureLoader, wallTexture);
   const gl = useThree((state) => state.gl);
@@ -46,15 +50,9 @@ const Wall3d: React.FC<Wall3dProps> = ({ wallId, interactive = true }) => {
   const onClickHandler = useCallback(
     (event: ThreeEvent<MouseEvent>) => {
       event.stopPropagation();
-      if (event.intersections.length > 0 && event.intersections[0].object === meshRef.current) {
-        if (event.ctrlKey) {
-          toggleSelectedWall(wallId);
-        } else {
-          setSelectedWall(wallId);
-        }
-      }
+      if (event.delta <= 5) onClick?.(event);
     },
-    [setSelectedWall, toggleSelectedWall, wallId],
+    [onClick],
   );
 
   const wallData = useMemo(() => {
@@ -99,6 +97,7 @@ const Wall3d: React.FC<Wall3dProps> = ({ wallId, interactive = true }) => {
 
   return (
     <mesh
+      userData={{ wallId: wall.id }}
       castShadow
       receiveShadow
       ref={meshRef}

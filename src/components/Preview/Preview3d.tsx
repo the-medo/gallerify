@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { useStore } from '../../store/store.ts';
+import { gallerySetupFrom, useStore } from '../../store/store.ts';
 import { Canvas, useThree } from '@react-three/fiber';
-import Base3d from '../Canvas/3D/Base3d.tsx';
-import RoomLayout from '../Canvas/RoomLayout.tsx';
+import GalleryScene from '../Canvas/3D/GalleryScene.tsx';
+import ArtworkDropTarget from '../Canvas/3D/ArtworkDropTarget.tsx';
+import { placementAtPoint } from '../../utils/artworkGeometry.ts';
 import { CameraControls } from '@react-three/drei';
 import type CameraControlsImpl from 'camera-controls';
 
@@ -23,7 +24,10 @@ function RoomCamera() {
 }
 
 export default function Preview3d({ paused = false }: { paused?: boolean }) {
-  const roomLayout = useStore((state) => state.roomLayout);
+  const setup = useStore(gallerySetupFrom);
+  const artworks = useStore((state) => state.artworks);
+  const selectedWallIds = useStore((state) => state.selectedWallIds);
+  const selectedPlacementId = useStore((state) => state.selectedPlacementId);
   return (
     <Canvas
       shadows
@@ -33,8 +37,29 @@ export default function Preview3d({ paused = false }: { paused?: boolean }) {
     >
       <ambientLight intensity={Math.PI * 0.4} />
       <pointLight castShadow position={[1, 4, 1]} decay={0} intensity={Math.PI * 0.3} />
-      <Base3d />
-      {roomLayout && <RoomLayout roomLayout={roomLayout} />}
+      <GalleryScene
+        setup={setup}
+        artworks={artworks}
+        selectedWallIds={selectedWallIds}
+        selectedPlacementId={selectedPlacementId}
+        onArtworkClick={(id) => useStore.getState().selectPlacement(id)}
+        onWallClick={(id, event) => {
+          const state = useStore.getState();
+          if (state.activeArtworkId && event.face) {
+            const normal = event.face.normal.clone().transformDirection(event.object.matrixWorld);
+            if (Math.abs(normal.y) > 0.5) {
+              state.setArtworkMessage('Choose a wall face to hang your artwork.');
+              return;
+            }
+            state.placeArtwork(
+              state.activeArtworkId,
+              placementAtPoint(state.walls[id], event.point, normal, state.width, state.height),
+            );
+          } else if (event.ctrlKey || event.metaKey) state.toggleSelectedWall(id);
+          else state.setSelectedWall(id);
+        }}
+      />
+      <ArtworkDropTarget />
       <RoomCamera />
     </Canvas>
   );
