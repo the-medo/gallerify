@@ -55,6 +55,36 @@ texture changes, and responsive layouts in a browser. The 3D preview requires
 WebGL. The app loads fonts from Google Fonts and wall/floor textures from the
 public Cloudflare R2 bucket, so those assets require network access.
 
+## Your artwork
+
+Open a saved gallery and choose **Art** to upload JPEG, PNG, or WebP images.
+Uploads are private to your account and can be reused across your galleries.
+Each image can be up to 20 MB and 40 megapixels; the library allows 500 MB,
+including the original and generated display images. A gallery can contain
+up to 200 placements.
+
+Click an artwork thumbnail, then click a wall face to hang it. On desktop you
+can also drag the thumbnail onto a wall. The **Wall** and **Wall face** selectors
+provide an alternative to aiming in 3D. Select a placed artwork to adjust its
+physical size, position along the wall, and center height. Proportions stay fixed;
+adjacent wall segments form one hanging surface, and joining walls block positions
+that would clip through them.
+
+Use **Save artwork details** for the library title, description, medium, year,
+and optional original dimensions. These library details are saved separately
+from the gallery arrangement. The gallery's **Save** button and minute autosave
+preserve its placements. Removing a placement keeps its image in the library;
+deleting an image requires removing and saving every gallery that uses it first.
+Changing presets or generating a new layout asks before returning placed works
+to the library.
+
+In **Play**, click a painting or choose it from **Inspect artwork** to open a
+neutral, zoomable image with its details. Walking pauses during inspection.
+Escape closes the artwork and leaves the walk open.
+
+See [artwork storage and API](docs/artwork.md) for private storage setup,
+document coordinates, media versions, and tests.
+
 ## Gallery presets
 
 The canvas opens with **The Salon**, one of 20 hand-authored layouts. Browse Small,

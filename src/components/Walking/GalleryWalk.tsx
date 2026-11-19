@@ -1,9 +1,9 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, events } from '@react-three/fiber';
 import { Cross2Icon, ResetIcon } from '@radix-ui/react-icons';
-import { useStore } from '../../store/store.ts';
-import Base3d from '../Canvas/3D/Base3d.tsx';
-import Wall3d from '../Canvas/3D/Wall3d.tsx';
+import { gallerySetupFrom, useStore } from '../../store/store.ts';
+import GalleryScene from '../Canvas/3D/GalleryScene.tsx';
+import ArtworkInspection from '../Artwork/ArtworkInspection.tsx';
 import WalkingCamera from './WalkingCamera.tsx';
 import type { WalkDirection } from './WalkingCamera.tsx';
 import './walking.css';
@@ -20,7 +20,10 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
   const exitButton = useRef<HTMLButtonElement>(null);
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const input = useRef(new Set<WalkDirection>());
-  const walls = useStore((state) => state.walls);
+  const setup = useStore(gallerySetupFrom);
+  const artworks = useStore((state) => state.artworks);
+  const [inspectedId, setInspectedId] = useState<string | null>(null);
+  const inspected = inspectedId ? artworks[inspectedId] : undefined;
   const [restart, setRestart] = useState(0);
   const [ready, setReady] = useState(false);
   const [mouseLook, setMouseLook] = useState(false);
@@ -66,12 +69,25 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
       aria-labelledby="walk-title"
       aria-describedby="walk-instructions"
       onCancel={(event) => {
+        if (event.target !== event.currentTarget) return;
         event.preventDefault();
         onExit();
       }}
     >
       <div className="walk-scene" aria-label="First-person gallery view">
         <Canvas
+          events={(state) => ({
+            ...events(state),
+            compute(event, state) {
+              if (document.pointerLockElement === state.gl.domElement) state.pointer.set(0, 0);
+              else
+                state.pointer.set(
+                  (event.offsetX / state.size.width) * 2 - 1,
+                  -(event.offsetY / state.size.height) * 2 + 1,
+                );
+              state.raycaster.setFromCamera(state.pointer, state.camera);
+            },
+          })}
           shadows
           camera={{ fov: 70, near: 0.05, far: 150 }}
           dpr={[1, 2]}
@@ -83,11 +99,15 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
           <hemisphereLight args={['#fffaf0', '#b7a58a', 2.4]} />
           <directionalLight position={[4, 8, 3]} intensity={1.2} />
           <Suspense fallback={null}>
-            <Base3d />
-            {Object.keys(walls).map((wallId) => (
-              <Wall3d key={wallId} wallId={wallId} interactive={false} />
-            ))}
-            <WalkingCamera input={input} restart={restart} onReady={onReady} />
+            <GalleryScene
+              setup={setup}
+              artworks={artworks}
+              onArtworkClick={(id) => {
+                const placement = setup.placements.find((item) => item.id === id);
+                if (placement) setInspectedId(placement.artworkId);
+              }}
+            />
+            <WalkingCamera input={input} restart={restart} onReady={onReady} enabled={!inspected} />
           </Suspense>
         </Canvas>
       </div>
@@ -101,6 +121,20 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
           </div>
         </div>
         <div className="walk-actions">
+          {setup.placements.length > 0 && (
+            <select
+              aria-label="Inspect artwork"
+              value=""
+              onChange={(event) => setInspectedId(event.target.value)}
+            >
+              <option value="">Inspect artwork…</option>
+              {Array.from(new Set(setup.placements.map((item) => item.artworkId))).map((id) => (
+                <option value={id} key={id} disabled={!artworks[id]}>
+                  {artworks[id]?.title ?? 'Artwork unavailable'}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             type="button"
             className="walk-restart"
@@ -161,6 +195,13 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
           </button>
         ))}
       </div>
+      {inspected && (
+        <ArtworkInspection
+          key={inspected.id}
+          artwork={inspected}
+          onClose={() => setInspectedId(null)}
+        />
+      )}
     </dialog>
   );
 }

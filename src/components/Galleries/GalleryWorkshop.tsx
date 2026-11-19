@@ -12,10 +12,15 @@ import FloorTextureSelector from '../TextureSelector/FloorTextureSelector.tsx';
 import TextureSelector from '../TextureSelector/TextureSelector.tsx';
 import Account from '../Account/Account.tsx';
 import './galleries.css';
+import ArtworkPanel from '../Artwork/ArtworkPanel.tsx';
 
 function Editor({ gallery }: { gallery: SavedGallery }) {
   const { name, rename, dirty, saving, error, save, hasChanges } = useGallerySave(gallery);
-  const [panel, setPanel] = useState<'Layout' | 'Finishes'>('Layout');
+  const [panel, setPanel] = useState<'Layout' | 'Art' | 'Finishes'>('Art');
+  const selectedPlacementId = useStore((state) => state.selectedPlacementId);
+  useEffect(() => {
+    if (selectedPlacementId) setPanel('Art');
+  }, [selectedPlacementId]);
   const activePresetId = useStore((state) => state.activePresetId);
   const loadPreset = useStore((state) => state.loadPreset);
   return (
@@ -82,7 +87,7 @@ function Editor({ gallery }: { gallery: SavedGallery }) {
         <Preview showMaterials={false} galleryName={name} />
         <aside className="workshop-inspector" aria-label="Gallery controls">
           <div className="inspector-switch" role="group" aria-label="Workshop controls">
-            {(['Layout', 'Finishes'] as const).map((item) => (
+            {(['Layout', 'Art', 'Finishes'] as const).map((item) => (
               <button
                 type="button"
                 key={item}
@@ -93,7 +98,10 @@ function Editor({ gallery }: { gallery: SavedGallery }) {
               </button>
             ))}
           </div>
-          {panel === 'Layout' ? (
+          <div hidden={panel !== 'Art'}>
+            <ArtworkPanel />
+          </div>
+          {panel === 'Layout' && (
             <div className="workshop-layout">
               <label className="workshop-preset">
                 Starting plan
@@ -112,7 +120,8 @@ function Editor({ gallery }: { gallery: SavedGallery }) {
               <GenerateBox />
               <Turn3dBox />
             </div>
-          ) : (
+          )}
+          {panel === 'Finishes' && (
             <>
               <TextureSelector />
               <FloorTextureSelector />

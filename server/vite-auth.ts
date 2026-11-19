@@ -1,5 +1,5 @@
 import { loadEnv, type Plugin } from 'vite';
-import { basename, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { migrateAuth } from './auth.ts';
 import { readAuthConfig } from './config.ts';
 import { createAuthMiddleware } from './middleware.ts';
@@ -11,6 +11,10 @@ export function authPlugin(): Plugin {
       const root = config.root || process.cwd();
       const env = { ...loadEnv(mode, root, ''), ...process.env };
       const database = resolve(root, env.DATABASE_PATH || '.gallerify/auth.sqlite');
+      const artworkDirectory = resolve(
+        root,
+        env.ARTWORK_STORAGE_PATH || resolve(dirname(database), 'artworks'),
+      );
       const allowedHosts = env.BETTER_AUTH_URL ? [new URL(env.BETTER_AUTH_URL).hostname] : [];
       return {
         preview: { allowedHosts },
@@ -23,6 +27,7 @@ export function authPlugin(): Plugin {
               '*.{crt,pem}',
               '**/.git/**',
               '**/.gallerify/**',
+              `${artworkDirectory}/**`,
               '**/server/**',
               '*.sqlite*',
               '*.db*',

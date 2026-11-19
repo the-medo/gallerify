@@ -64,6 +64,20 @@
   align-items: center;
   gap: 12px;
 }
+.walk-actions {
+  flex-wrap: wrap;
+}
+.walk-actions select {
+  max-width: 210px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
 .walk-eyebrow {
   display: block;
   color: var(--muted);

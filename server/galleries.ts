@@ -1,8 +1,9 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { DatabaseSync } from 'node:sqlite';
 import { z } from 'zod';
-import { defaultGallerySetup } from '../src/lib/gallery.ts';
+import { defaultGallerySetup, migrateGallerySetup } from '../src/lib/gallery.ts';
 import { wallKeyFromLine } from '../src/utils/types.ts';
+import { placementIssue } from '../src/utils/artworkGeometry.ts';
 
 export const galleryMigration = `
   CREATE TABLE IF NOT EXISTS gallery (
@@ -38,6 +39,22 @@ const update = z.object({
   revision: z.int().positive(),
   setup: z
     .object({
+      schemaVersion: z.literal(2).default(2),
+      placements: z
+        .array(
+          z.object({
+            id: z.uuid(),
+            artworkId: z.uuid(),
+            wallId: z.string().max(40),
+            side: z.union([z.literal(1), z.literal(-1)]),
+            u: z.number().min(-30).max(30),
+            elevation: z.number().min(0).max(3),
+            width: z.number().min(0.05).max(30),
+            height: z.number().min(0.05).max(3),
+          }),
+        )
+        .max(200)
+        .default([]),
       dimensions,
       generatorSettings: dimensions,
       activePresetId: z.string().max(80).nullable(),
@@ -46,7 +63,11 @@ const update = z.object({
       floorTextureId: textureId,
     })
     .refine(
-      ({ walls, dimensions: { width, height, stepSize } }) =>
+      ({ walls, placements, dimensions: { width, height, stepSize } }) =>
+        new Set(placements.map((item) => item.id)).size === placements.length &&
+        placements.every(
+          (item) => !placementIssue(item, Object.fromEntries(walls.map((wall) => [wall.id, wall]))),
+        ) &&
         new Set(walls.map((item) => item.id)).size === walls.length &&
         walls.every(({ id, line }) => {
           const { start, end } = line;
@@ -116,7 +137,10 @@ export async function handleGalleries(
       )
       .get(ownerId, id);
     if (!row) return missing();
-    return json(response, 200, { ...row, setup: JSON.parse(String(row.setup)) });
+    return json(response, 200, {
+      ...row,
+      setup: migrateGallerySetup(JSON.parse(String(row.setup))),
+    });
   }
 
   if (request.method !== (collection ? 'POST' : 'PUT')) {
@@ -155,22 +179,62 @@ export async function handleGalleries(
   const parsed = update.safeParse(body);
   if (!parsed.success) return json(response, 400, { message: 'Check the gallery name and setup.' });
   const { name, setup, revision } = parsed.data;
-  const serialized = JSON.stringify(setup);
-  const saved = database
-    .prepare(
-      'UPDATE gallery SET name = ?, setup = ?, revision = revision + 1, updatedAt = ? WHERE ownerId = ? AND id = ? AND revision = ? RETURNING revision, updatedAt',
-    )
-    .get(name, serialized, Date.now(), ownerId, id, revision);
-  if (saved) return json(response, 200, saved);
-  const current = database
-    .prepare('SELECT name, setup, revision, updatedAt FROM gallery WHERE ownerId = ? AND id = ?')
-    .get(ownerId, id);
-  if (!current) return missing();
-  // An interrupted save can be retried after the first write already succeeded.
-  if (current.name === name && current.setup === serialized) {
-    return json(response, 200, { revision: current.revision, updatedAt: current.updatedAt });
+  // Keep reference checks and the write in one lock, including across processes.
+  database.exec('BEGIN IMMEDIATE');
+  let result: { status: number; body: unknown };
+  try {
+    result = save();
+    database.exec('COMMIT');
+  } catch (error) {
+    database.exec('ROLLBACK');
+    throw error;
   }
-  json(response, 409, {
-    message: 'This gallery changed in another tab. Reload to open the saved version.',
-  });
+  return json(response, result.status, result.body);
+
+  function save(): { status: number; body: unknown } {
+    if (!database.prepare('SELECT id FROM gallery WHERE ownerId = ? AND id = ?').get(ownerId, id))
+      return { status: 404, body: { message: 'Gallery not found.' } };
+    for (const placement of setup.placements) {
+      const artwork = database
+        .prepare('SELECT pixelWidth, pixelHeight FROM artwork WHERE id = ? AND ownerId = ?')
+        .get(placement.artworkId, ownerId);
+      if (
+        !artwork ||
+        Math.abs(
+          placement.width /
+            placement.height /
+            (Number(artwork.pixelWidth) / Number(artwork.pixelHeight)) -
+            1,
+        ) > 0.02
+      )
+        return {
+          status: 400,
+          body: {
+            message:
+              'An artwork is unavailable or its proportions changed. Reload your library and try again.',
+          },
+        };
+    }
+    const serialized = JSON.stringify(setup);
+    const saved = database
+      .prepare(
+        'UPDATE gallery SET name = ?, setup = ?, revision = revision + 1, updatedAt = ? WHERE ownerId = ? AND id = ? AND revision = ? RETURNING revision, updatedAt',
+      )
+      .get(name, serialized, Date.now(), ownerId, id, revision);
+    if (saved) return { status: 200, body: saved };
+    const current = database
+      .prepare('SELECT name, setup, revision, updatedAt FROM gallery WHERE ownerId = ? AND id = ?')
+      .get(ownerId, id);
+    if (!current) return { status: 404, body: { message: 'Gallery not found.' } };
+    // An interrupted save can be retried after the first write already succeeded.
+    if (current.name === name && current.setup === serialized) {
+      return { status: 200, body: { revision: current.revision, updatedAt: current.updatedAt } };
+    }
+    return {
+      status: 409,
+      body: {
+        message: 'This gallery changed in another tab. Reload to open the saved version.',
+      },
+    };
+  }
 }

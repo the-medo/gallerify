@@ -1,14 +1,18 @@
 import { useLayoutEffect, useRef } from 'react';
-import { useStore } from '../../../store/store.ts';
 import * as THREE from 'three';
 import { useLoader, useThree } from '@react-three/fiber';
 import { floorMaterials, FLOOR_TEXTURE_SIZE } from '../../../utils/textures.ts';
 
-export default function Base3d() {
+export default function Base3d({
+  width,
+  height,
+  floorTextureId,
+}: {
+  width: number;
+  height: number;
+  floorTextureId: string;
+}) {
   const meshRef = useRef<THREE.Mesh>(null!);
-  const width = useStore((state) => state.width);
-  const height = useStore((state) => state.height);
-  const floorTextureId = useStore((state) => state.floorTextureId);
   const material = floorMaterials[floorTextureId] ?? floorMaterials['1'];
   const texture = useLoader(THREE.TextureLoader, material.url);
   const gl = useThree((state) => state.gl);

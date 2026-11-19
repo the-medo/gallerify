@@ -2,8 +2,10 @@ import { create } from 'zustand';
 import type { TRoomLayout, TWall } from '../utils/types.ts';
 import { computeWallRemoval } from '../compute/computeWallRemoval.ts';
 import { createPresetLayout, galleryPresets } from '../presets/galleryPresets.ts';
-import { defaultGallerySetup, type GallerySetup } from '../lib/gallery.ts';
+import { defaultGallerySetup, migrateGallerySetup, type GallerySetup } from '../lib/gallery.ts';
 import type { CreateBaseProps } from '../compute/createBase.ts';
+import { artworkDisplaySize, type Artwork, type ArtworkPlacement } from '../lib/artwork.ts';
+import { placementIssue } from '../utils/artworkGeometry.ts';
 
 const layoutWalls = (layout: TRoomLayout): Record<string, TWall> =>
   Object.fromEntries(
@@ -27,6 +29,11 @@ type State = {
   walls: Record<string, TWall>;
   selectedWallIds: Record<string, true | undefined>;
   floorTextureId: string;
+  placements: ArtworkPlacement[];
+  artworks: Record<string, Artwork>;
+  activeArtworkId: string | null;
+  selectedPlacementId: string | null;
+  artworkMessage: string;
 };
 
 type Actions = {
@@ -43,6 +50,18 @@ type Actions = {
   setFloorTexture: (textureId: string) => void;
   handleGenerate: () => void;
   loadPreset: (presetId: string) => void;
+  setArtworks: (items: Artwork[]) => void;
+  upsertArtwork: (item: Artwork) => void;
+  forgetArtwork: (id: string) => void;
+  chooseArtwork: (id: string | null) => void;
+  selectPlacement: (id: string | null) => void;
+  placeArtwork: (
+    artworkId: string,
+    anchor: Pick<ArtworkPlacement, 'wallId' | 'side' | 'u' | 'elevation'>,
+  ) => void;
+  updatePlacement: (id: string, changes: Partial<ArtworkPlacement>) => void;
+  removePlacement: (id: string) => void;
+  setArtworkMessage: (message: string) => void;
 };
 
 const computeSquareSize = (width: number, windowWidth: number) =>
@@ -66,6 +85,7 @@ function replaceWalls(state: State, replacements: Record<string, TWall>) {
 
 // Generation merges the grid into one room. Only its finished walls are editable.
 function restoredState(setup: GallerySetup, windowWidth: number) {
+  setup = migrateGallerySetup(setup);
   const room = { id: 'gallery', walls: setup.walls, neighbors: [] };
   const roomLayout = { rooms: { gallery: room } };
   return {
@@ -78,6 +98,10 @@ function restoredState(setup: GallerySetup, windowWidth: number) {
     squareSize: computeSquareSize(setup.dimensions.width, windowWidth),
     selectedWallIds: {},
     floorTextureId: setup.floorTextureId,
+    placements: setup.placements,
+    selectedPlacementId: null,
+    activeArtworkId: null,
+    artworkMessage: '',
     roomLayout,
     walls: layoutWalls(roomLayout),
   };
@@ -85,6 +109,8 @@ function restoredState(setup: GallerySetup, windowWidth: number) {
 
 export function gallerySetupFrom(state: State): GallerySetup {
   return {
+    schemaVersion: 2,
+    placements: state.placements,
     dimensions: { width: state.width, height: state.height, stepSize: state.stepSize },
     generatorSettings: state.generatorSettings,
     activePresetId: state.activePresetId,
@@ -94,8 +120,9 @@ export function gallerySetupFrom(state: State): GallerySetup {
   };
 }
 
-export const useStore = create<State & Actions>((set) => ({
+export const useStore = create<State & Actions>((set, get) => ({
   windowWidth: 1920,
+  artworks: {},
   ...restoredState(defaultGallerySetup(), 1920),
   restoreSetup: (setup) => set((state) => restoredState(setup, state.windowWidth)),
 
@@ -163,11 +190,24 @@ export const useStore = create<State & Actions>((set) => ({
       return Object.keys(replacements).length ? replaceWalls(state, replacements) : state;
     }),
 
-  handleGenerate: () =>
+  handleGenerate: () => {
+    if (
+      get().placements.length &&
+      !window.confirm(
+        'Generate a new layout? Placed artwork will return to your library. Your image files will be kept.',
+      )
+    )
+      return;
     set((state) => {
       const roomLayout = computeWallRemoval(state.generatorSettings)[0];
 
       return {
+        placements: [],
+        selectedPlacementId: null,
+        activeArtworkId: null,
+        artworkMessage: state.placements.length
+          ? 'Your artwork is back in the library, ready to hang.'
+          : '',
         generated: true,
         activePresetId: null,
         ...state.generatorSettings,
@@ -176,15 +216,29 @@ export const useStore = create<State & Actions>((set) => ({
         roomLayout,
         walls: layoutWalls(roomLayout),
       };
-    }),
+    });
+  },
 
-  loadPreset: (presetId: string) =>
+  loadPreset: (presetId: string) => {
+    if (
+      get().placements.length &&
+      !window.confirm(
+        'Change the layout? Placed artwork will return to your library. Your image files will be kept.',
+      )
+    )
+      return;
     set((state) => {
       const preset = galleryPresets.find((candidate) => candidate.id === presetId);
       if (!preset) return state;
       const roomLayout = createPresetLayout(preset);
       const dimensions = { width: preset.width, height: preset.height, stepSize: preset.stepSize };
       return {
+        placements: [],
+        selectedPlacementId: null,
+        activeArtworkId: null,
+        artworkMessage: state.placements.length
+          ? 'Your artwork is back in the library, ready to hang.'
+          : '',
         ...dimensions,
         generatorSettings: dimensions,
         maxSize: Math.floor(30 / preset.stepSize) * preset.stepSize,
@@ -195,5 +249,63 @@ export const useStore = create<State & Actions>((set) => ({
         selectedWallIds: {},
         squareSize: computeSquareSize(preset.width, state.windowWidth),
       };
+    });
+  },
+  setArtworks: (items) =>
+    set({ artworks: Object.fromEntries(items.map((item) => [item.id, item])) }),
+  upsertArtwork: (item) => set((state) => ({ artworks: { ...state.artworks, [item.id]: item } })),
+  forgetArtwork: (id) =>
+    set((state) => ({
+      artworks: Object.fromEntries(Object.entries(state.artworks).filter(([key]) => key !== id)),
+      activeArtworkId: state.activeArtworkId === id ? null : state.activeArtworkId,
+    })),
+  chooseArtwork: (id) =>
+    set({
+      activeArtworkId: id,
+      selectedPlacementId: null,
+      artworkMessage: '',
+      ...(id ? { previewMode: '3d' as const } : {}),
     }),
+  selectPlacement: (id) =>
+    set({ selectedPlacementId: id, activeArtworkId: null, artworkMessage: '' }),
+  setArtworkMessage: (message) => set({ artworkMessage: message }),
+  placeArtwork: (artworkId, anchor) =>
+    set((state) => {
+      const artwork = state.artworks[artworkId];
+      if (!artwork) return { artworkMessage: 'This artwork is unavailable. Refresh your library.' };
+      if (state.placements.length >= 200)
+        return { artworkMessage: 'This gallery can hold up to 200 artwork placements.' };
+      const placement: ArtworkPlacement = {
+        id: crypto.randomUUID(),
+        artworkId,
+        ...anchor,
+        ...artworkDisplaySize(artwork),
+      };
+      const issue = placementIssue(placement, state.walls);
+      if (issue) return { artworkMessage: issue };
+      return {
+        placements: [...state.placements, placement],
+        selectedPlacementId: placement.id,
+        activeArtworkId: null,
+        artworkMessage: 'Artwork hung. Select it to adjust its position or size.',
+      };
+    }),
+  updatePlacement: (id, changes) =>
+    set((state) => {
+      const current = state.placements.find((item) => item.id === id);
+      if (!current) return state;
+      const placement = { ...current, ...changes, id: current.id, artworkId: current.artworkId };
+      const issue = placementIssue(placement, state.walls);
+      if (issue) return { artworkMessage: issue };
+      return {
+        placements: state.placements.map((item) => (item.id === id ? placement : item)),
+        artworkMessage: '',
+      };
+    }),
+  removePlacement: (id) =>
+    set((state) => ({
+      placements: state.placements.filter((item) => item.id !== id),
+      selectedPlacementId: null,
+      artworkMessage: 'Removed from this wall. The artwork is still in your library.',
+    })),
 }));

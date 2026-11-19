@@ -12,6 +12,10 @@ module.exports = {
   plugins: ['react-refresh', 'prettier'],
   overrides: [
     { files: ['scripts/worktree-dev/*.mjs'], env: { browser: false, node: true, es2022: true } },
+    {
+      files: ['scripts/artwork-workflow.browser.mjs'],
+      env: { browser: true, node: true, es2022: true },
+    },
   ],
   rules: {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],

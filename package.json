@@ -17,6 +17,7 @@
     "test:worktree": "node --test scripts/worktree-dev/*.test.mjs",
     "test:presets": "node --test scripts/gallery-presets.test.mjs",
     "test:walking": "node --test scripts/gallery-walking.test.mjs",
+    "test:artwork:browser": "node scripts/artwork-workflow.browser.mjs",
     "build": "tsc && tsc -p tsconfig.node.json && vite build",
     "lint": "eslint . --ext ts,tsx,mjs --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
@@ -26,6 +27,7 @@
     "test:auth": "node --test server/*.test.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1172.0",
     "@pixi/react": "^7.1.1",
     "@radix-ui/react-icons": "^1.3.0",
     "@radix-ui/themes": "^2.0.0",
@@ -35,12 +37,14 @@
     "pixi.js": "^7.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "sharp": "^0.35.5",
     "sirv": "^3.0.2",
     "three": "^0.158.0",
     "zod": "^4.5.4",
     "zustand": "^4.4.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@types/node": "^24",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",

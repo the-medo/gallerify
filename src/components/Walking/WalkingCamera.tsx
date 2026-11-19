@@ -30,10 +30,12 @@ export default function WalkingCamera({
   input,
   restart,
   onReady,
+  enabled = true,
 }: {
   input: WalkInput;
   restart: number;
   onReady: () => void;
+  enabled?: boolean;
 }) {
   const camera = useThree((state) => state.camera);
   const canvas = useThree((state) => state.gl.domElement);
@@ -56,6 +58,11 @@ export default function WalkingCamera({
   }, [camera, space, stepSize, restart, input, onReady]);
 
   useEffect(() => {
+    if (!enabled) {
+      keys.current.clear();
+      input.current.clear();
+      return;
+    }
     let drag: { id: number; x: number; y: number } | null = null;
     const clearInput = () => {
       keys.current.clear();
@@ -114,9 +121,10 @@ export default function WalkingCamera({
       canvas.removeEventListener('lostpointercapture', onPointerUp);
       canvas.removeEventListener('pointercancel', onPointerUp);
     };
-  }, [canvas, input]);
+  }, [canvas, input, enabled]);
 
   useFrame((_, delta) => {
+    if (!enabled) return;
     const elapsed = Math.min(delta, 0.05);
     const pressed = (...codes: string[]) => codes.some((code) => keys.current.has(code));
     const forward =
