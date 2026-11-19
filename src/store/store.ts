@@ -1,15 +1,10 @@
 import { create } from 'zustand';
-import { DEFAULT_POINT_SIZE, TRoomLayout, TWall } from '../utils/types.ts';
+import type { TRoomLayout, TWall } from '../utils/types.ts';
 import { computeWallRemoval } from '../compute/computeWallRemoval.ts';
-import {
-  createPresetLayout,
-  DEFAULT_PRESET_ID,
-  galleryPresets,
-} from '../presets/galleryPresets.ts';
+import { createPresetLayout, galleryPresets } from '../presets/galleryPresets.ts';
+import { defaultGallerySetup, type GallerySetup } from '../lib/gallery.ts';
 import type { CreateBaseProps } from '../compute/createBase.ts';
 
-const defaultPreset = galleryPresets.find((preset) => preset.id === DEFAULT_PRESET_ID)!;
-const initialLayout = createPresetLayout(defaultPreset);
 const layoutWalls = (layout: TRoomLayout): Record<string, TWall> =>
   Object.fromEntries(
     Object.values(layout.rooms).flatMap((room) => room.walls.map((wall) => [wall.id, wall])),
@@ -28,13 +23,14 @@ type State = {
   maxSize: number;
   windowWidth: number;
   squareSize: number;
-  roomLayout: TRoomLayout | undefined;
+  roomLayout: TRoomLayout;
   walls: Record<string, TWall>;
   selectedWallIds: Record<string, true | undefined>;
   floorTextureId: string;
 };
 
 type Actions = {
+  restoreSetup: (setup: GallerySetup) => void;
   setPreviewMode: (mode: PreviewMode) => void;
   setStepSize: (sliderInput: number[]) => void;
   setWidth: (sliderInput: number[]) => void;
@@ -58,25 +54,50 @@ const computeDimension = (dimension: number, stepSize: number) =>
     Math.max(stepSize * 2, Math.round(dimension / stepSize) * stepSize),
   );
 
+function replaceWalls(state: State, replacements: Record<string, TWall>) {
+  const rooms = Object.fromEntries(
+    Object.entries(state.roomLayout.rooms).map(([id, room]) => [
+      id,
+      { ...room, walls: room.walls.map((wall) => replacements[wall.id] ?? wall) },
+    ]),
+  );
+  return { roomLayout: { rooms }, walls: { ...state.walls, ...replacements } };
+}
+
+// Generation merges the grid into one room. Only its finished walls are editable.
+function restoredState(setup: GallerySetup, windowWidth: number) {
+  const room = { id: 'gallery', walls: setup.walls, neighbors: [] };
+  const roomLayout = { rooms: { gallery: room } };
+  return {
+    ...setup.dimensions,
+    generated: true,
+    activePresetId: setup.activePresetId,
+    generatorSettings: setup.generatorSettings,
+    previewMode: setup.previewMode,
+    maxSize: Math.floor(30 / setup.generatorSettings.stepSize) * setup.generatorSettings.stepSize,
+    squareSize: computeSquareSize(setup.dimensions.width, windowWidth),
+    selectedWallIds: {},
+    floorTextureId: setup.floorTextureId,
+    roomLayout,
+    walls: layoutWalls(roomLayout),
+  };
+}
+
+export function gallerySetupFrom(state: State): GallerySetup {
+  return {
+    dimensions: { width: state.width, height: state.height, stepSize: state.stepSize },
+    generatorSettings: state.generatorSettings,
+    activePresetId: state.activePresetId,
+    previewMode: state.previewMode,
+    walls: Object.values(state.walls),
+    floorTextureId: state.floorTextureId,
+  };
+}
+
 export const useStore = create<State & Actions>((set) => ({
-  generated: true,
-  activePresetId: defaultPreset.id,
-  generatorSettings: {
-    stepSize: defaultPreset.stepSize,
-    width: defaultPreset.width,
-    height: defaultPreset.height,
-  },
-  previewMode: '3d',
-  stepSize: defaultPreset.stepSize,
-  width: defaultPreset.width,
-  height: defaultPreset.height,
-  maxSize: 30,
-  roomLayout: initialLayout,
-  walls: layoutWalls(initialLayout),
   windowWidth: 1920,
-  squareSize: DEFAULT_POINT_SIZE,
-  selectedWallIds: {},
-  floorTextureId: '1',
+  ...restoredState(defaultGallerySetup(), 1920),
+  restoreSetup: (setup) => set((state) => restoredState(setup, state.windowWidth)),
 
   setPreviewMode: (mode: PreviewMode) => set(() => ({ previewMode: mode })),
 
@@ -123,12 +144,7 @@ export const useStore = create<State & Actions>((set) => ({
     }),
 
   setWall: (wallId: string, wallData: TWall) =>
-    set((state) => ({
-      walls: {
-        ...state.walls,
-        [wallId]: wallData,
-      },
-    })),
+    set((state) => replaceWalls(state, { [wallId]: wallData })),
 
   setSelectedWall: (wallId: string) =>
     set(() => ({
@@ -139,26 +155,12 @@ export const useStore = create<State & Actions>((set) => ({
 
   setWallTexture: (textureId: string) =>
     set((state) => {
-      const layout = state.roomLayout;
-
-      for (const roomsKey in layout?.rooms) {
-        layout.rooms[roomsKey].walls.forEach((w) => {
-          if (state.selectedWallIds[w.id]) {
-            w.textureId = textureId;
-            console.log('Found selected wall!');
-          }
-        });
+      const replacements: Record<string, TWall> = {};
+      for (const id of Object.keys(state.selectedWallIds)) {
+        const wall = state.walls[id];
+        if (wall && wall.textureId !== textureId) replacements[id] = { ...wall, textureId };
       }
-
-      const walls = state.walls;
-      Object.keys(state.selectedWallIds).forEach((swid) => (walls[swid].textureId = textureId));
-
-      console.log('texture 3 - ', textureId);
-
-      return {
-        roomLayout: layout,
-        walls,
-      };
+      return Object.keys(replacements).length ? replaceWalls(state, replacements) : state;
     }),
 
   handleGenerate: () =>

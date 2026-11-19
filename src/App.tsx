@@ -7,8 +7,13 @@ import GalleryArtwork from './components/GalleryArtwork/GalleryArtwork.tsx';
 import gallerifyMark from './assets/brand/gallerify-mark.png';
 import PresetSelector from './components/PresetSelector/PresetSelector.tsx';
 import Account from './components/Account/Account.tsx';
+import { authClient } from './lib/auth-client.ts';
+import GalleryLibrary from './components/Galleries/GalleryLibrary.tsx';
+import GalleryWorkshop from './components/Galleries/GalleryWorkshop.tsx';
 
 function App() {
+  const { data: session, isPending } = authClient.useSession();
+  const workshop = /^\/workshop\/([^/]+)\/?$/.exec(window.location.pathname);
   const setWindowWidth = useStore((state) => state.setWindowWidth);
 
   useEffect(() => {
@@ -17,6 +22,9 @@ function App() {
     handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, [setWindowWidth]);
+
+  if (workshop)
+    return <GalleryWorkshop id={workshop[1]} ownerId={session?.user.id} pending={isPending} />;
 
   return (
     <div className="app-shell">
@@ -33,6 +41,7 @@ function App() {
         </header>
 
         <main id="main">
+          {session && <GalleryLibrary key={session.user.id} />}
           <section className="intro" aria-labelledby="page-title">
             <div className="intro-copy">
               <p className="eyebrow">
@@ -49,7 +58,7 @@ function App() {
           </section>
 
           <div className="workspace-caption">
-            <span>The gallery canvas</span>
+            <span>Gallery demo</span>
             <span>A space for your collection</span>
           </div>
           <div className="workspace">

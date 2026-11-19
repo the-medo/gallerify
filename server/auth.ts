@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
+import { galleryMigration } from './galleries.ts';
 import type { AuthConfig } from './config.ts';
 
 function openDatabase(config: AuthConfig) {
@@ -56,8 +57,16 @@ export async function migrateAuth(config: AuthConfig, apply = true) {
   const database = openDatabase(config);
   try {
     const migration = await getMigrations(authOptions(config, database));
-    if (apply) await migration.runMigrations();
-    else return await migration.compileMigrations();
+    if (apply) {
+      await migration.runMigrations();
+      database.exec(galleryMigration);
+    } else {
+      const authPlan = await migration.compileMigrations();
+      const galleriesExist = database
+        .prepare("SELECT 1 FROM sqlite_schema WHERE type = 'table' AND name = 'gallery'")
+        .get();
+      return [authPlan, galleriesExist ? '' : galleryMigration].filter(Boolean).join('\n');
+    }
   } finally {
     if (database.isOpen) database.close();
   }

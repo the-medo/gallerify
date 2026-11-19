@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { once } from 'node:events';
 import {
   copyFileSync,
@@ -18,6 +17,7 @@ import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { portAvailable } from './ports.mjs';
 
 const exec = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -99,13 +99,14 @@ test(
         assert.match(await run(first, 'status'), /not configured/);
         assert.equal(existsSync(join(first, '.gallerify')), false);
         assert.equal(existsSync(envPath(first)), false);
-        const id = createHash('sha256').update(first).digest('hex').slice(0, 12);
-        const initialPort = 5200 + (parseInt(id.slice(0, 6), 16) % 800);
+        let initialPort = 5281;
+        while (initialPort <= 5290 && !(await portAvailable(initialPort, '0.0.0.0'))) initialPort++;
+        assert.ok(initialPort < 5290, 'The lifecycle fixture needs two available pool ports.');
         occupied = createServer();
         occupied.listen(initialPort, '127.0.0.1');
         await once(occupied, 'listening');
         await run(first, 'setup');
-        assert.notEqual(port(first), initialPort);
+        assert.ok(port(first) > initialPort && port(first) <= 5290);
         await new Promise((resolveClose) => occupied.close(resolveClose));
         assert.equal(read(join(first, '.env.local')), read(join(root, '.env.example')));
         const customEnv = 'VITE_FIXTURE_LABEL=local-edit\n';
@@ -114,7 +115,7 @@ test(
         await Promise.all([run(first, 'setup'), run(second, 'setup'), run(first, 'setup')]);
         assert.equal(read(envPath(first)), original);
         assert.equal(read(join(first, '.env.local')), customEnv);
-        assert.notEqual(port(first), port(second));
+        assert.equal(port(second), initialPort);
         assert.equal(existsSync(statePath(first)), false);
         const ignored = (
           await exec('git', [
@@ -192,6 +193,51 @@ test(
         }
       },
     );
+
+    await t.test(
+      'legacy assignments remain visible and cannot start outside the pool',
+      async () => {
+        const original = read(envPath(first));
+        try {
+          writeFileSync(
+            envPath(first),
+            original.replace(/^GALLERIFY_DEV_PORT=\d+$/m, 'GALLERIFY_DEV_PORT=5976'),
+          );
+          assert.match(await run(first, 'status'), /127\.0\.0\.1:5976/);
+          await assert.rejects(run(first, 'up'), /outside 5281–5290/);
+          assert.equal(existsSync(statePath(first)), false);
+        } finally {
+          writeFileSync(envPath(first), original);
+        }
+      },
+    );
+
+    await t.test('all ten reservations exhaust the pool and removal releases a slot', async () => {
+      const candidate = join(fixture, 'candidate');
+      await git('worktree', 'add', '--detach', candidate);
+      const available = port(first);
+      const slots = [];
+      for (let slot = 5281; slot <= 5290; slot++) {
+        if ([available, port(second)].includes(slot)) continue;
+        const path = join(fixture, 'reserved-' + slot);
+        await git('worktree', 'add', '--detach', path);
+        writeFileSync(envPath(path), 'GALLERIFY_DEV_PORT=' + slot + '\n');
+        slots.push(path);
+      }
+      await assert.rejects(run(candidate, 'setup'), /All Gallerify ports 5281–5290/);
+      assert.equal(existsSync(envPath(candidate)), false);
+      // A stopped checkout keeps its slot. Releasing its reservation makes it reusable.
+      const original = read(envPath(first));
+      rmSync(envPath(first));
+      try {
+        await run(candidate, 'setup');
+        assert.equal(port(candidate), available);
+      } finally {
+        await git('worktree', 'remove', '--force', candidate);
+        writeFileSync(envPath(first), original);
+        for (const path of slots) await git('worktree', 'remove', '--force', path);
+      }
+    });
 
     await t.test('failed startup cleans process state and retains a useful log', async () => {
       const configPath = join(first, 'vite.config.mjs');

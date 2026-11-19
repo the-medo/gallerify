@@ -80,9 +80,10 @@ to use Vite's production mode.
 
 ## Ports and process ownership
 
-Each checkout path selects a stable starting point in ports 5200–5999. Setup
-skips live listeners and ports reserved in other registered worktrees, including
-stopped ones. A lock inside the shared Git directory serializes managed
+Setup picks the lowest available port from **5281–5290** and stores it in
+`.env.worktree`. It skips live listeners and reservations held by other
+registered worktrees, including stopped ones. When all ten slots are taken,
+setup reports exhaustion. Release a retired reservation to reuse its port. A lock inside the shared Git directory serializes managed
 lifecycle commands across worktrees. Vite uses `strictPort`, so a port collision
 never silently changes the printed URL. Separate Git clones do not share this
 reservation lock; a collision at startup fails explicitly.
@@ -93,7 +94,7 @@ Serve routes first, then map the unused HTTPS port to this worktree's loopback
 listener. Set `BETTER_AUTH_URL` to the browser-facing HTTPS origin and register
 its Google callback. See [remote browsers](../../docs/accounts.md#remote-browsers-and-forwarded-ports).
 `status` reports the internal listener; share the configured Tailscale URL with
-the user. The `user-accounts` checkout uses `https://steamdeck.tail73a93e.ts.net:5281/`.
+the user. Register the ten pool callbacks once on the shared Google web client.
 
 Before stopping anything, the launcher checks Linux `/proc` for the exact server
 script, per-launch token, and working directory. A stale/reused PID or another
@@ -105,6 +106,10 @@ all local configuration. Avoid stopping servers using broad `pkill` commands.
 - **Node/Yarn missing:** activate Node 24 in the current shell and install Yarn
   1.22.22. Non-interactive shells may not inherit your interactive version manager.
 - **Dependencies missing:** run the bootstrap in this worktree.
+- **Existing port outside the pool:** take note of the old URL and Serve route,
+  run `down`, remove the generated `.env.worktree`, and run `setup`. Configure
+  the new auth origin and private Serve mapping before restarting. Remove the
+  old verified route once the new preview responds.
 - **Port occupied after setup:** inspect its owner. To allocate another port,
   run `down`, remove only this worktree's `.env.worktree`, then run `up`.
 - **Startup failure:** inspect `logs`; `up` retains the log and cleans up its

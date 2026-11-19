@@ -51,7 +51,7 @@ scripts/worktree-dev/gallerify-worktree-dev down
 Read [the worktree guide](scripts/worktree-dev/README.md) before changing lifecycle
 tooling. Bootstrap installs dependencies and performs idempotent setup; it does
 not start the application. `up` binds Vite to loopback with a worktree-specific
-port. `status` reports the internal listener. For remote access, use the configured
+port from **5281–5290**. Each slot has a reusable Google callback. `status` reports the internal listener. For remote access, use the configured
 Tailscale HTTPS origin and set `BETTER_AUTH_URL` to that browser-facing origin.
 
 `.env.local`, `.env.worktree`, and `.gallerify/` are local state. Do not commit or

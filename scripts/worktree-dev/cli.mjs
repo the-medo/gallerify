@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { execFileSync, spawn } from 'node:child_process';
 import {
   closeSync,
@@ -13,14 +13,13 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { createServer } from 'node:net';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
+import { configuredPort, portAvailable, reservePort } from './ports.mjs';
 import { syncGoogleEnv } from './google-env.mjs';
 
 const root = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
-const id = createHash('sha256').update(root).digest('hex').slice(0, 12);
 const stateDir = join(root, '.gallerify');
 const envPath = join(root, '.env.worktree');
 const processPath = join(stateDir, 'server.json');
@@ -42,19 +41,6 @@ function atomicWrite(path, content) {
   const temporary = `${path}.${process.pid}.tmp`;
   writeFileSync(temporary, content, { mode: 0o600 });
   renameSync(temporary, path);
-}
-
-function config() {
-  const text = readOptional(envPath);
-  if (text === null) return null;
-  const worktreeId = text.match(/^GALLERIFY_WORKTREE_ID=([a-f0-9]{12})$/m)?.[1];
-  const port = Number(text.match(/^GALLERIFY_DEV_PORT=(\d+)$/m)?.[1]);
-  if (worktreeId !== id || !Number.isInteger(port) || port < 5200 || port > 5999) {
-    throw new Error(
-      'Invalid or copied .env.worktree. Run down, remove .env.worktree, then run setup.',
-    );
-  }
-  return { port };
 }
 
 function processState() {
@@ -90,17 +76,6 @@ function ownsProcess(state) {
   }
 }
 
-async function portAvailable(port) {
-  const server = createServer();
-  return new Promise((resolveAvailability, reject) => {
-    server.once('error', (error) => {
-      if (error.code === 'EADDRINUSE') resolveAvailability(false);
-      else reject(error);
-    });
-    server.listen({ host, port }, () => server.close(() => resolveAvailability(true)));
-  });
-}
-
 async function setup() {
   mkdirSync(stateDir, { recursive: true, mode: 0o700 });
   try {
@@ -112,36 +87,7 @@ async function setup() {
     encoding: 'utf8',
   }).trim();
   syncGoogleEnv(dirname(resolve(root, commonGitDir)), root);
-  let settings = config();
-  if (!settings) {
-    const worktrees = execFileSync('git', ['-C', root, 'worktree', 'list', '--porcelain', '-z'], {
-      encoding: 'utf8',
-    })
-      .split('\0')
-      .filter((entry) => entry.startsWith('worktree '))
-      .map((entry) => entry.slice(9));
-    const reserved = new Set(
-      worktrees.map((path) =>
-        Number(
-          readOptional(join(path, '.env.worktree'))?.match(/^GALLERIFY_DEV_PORT=(\d+)$/m)?.[1],
-        ),
-      ),
-    );
-    const offset = parseInt(id.slice(0, 6), 16) % 800;
-    for (let i = 0; i < 800; i++) {
-      const port = 5200 + ((offset + i) % 800);
-      if (!reserved.has(port) && (await portAvailable(port))) {
-        settings = { port };
-        atomicWrite(
-          envPath,
-          `# Generated for this worktree; do not copy or commit.\nGALLERIFY_WORKTREE_ID=${id}\nGALLERIFY_DEV_PORT=${port}\n`,
-        );
-        break;
-      }
-    }
-    if (!settings) throw new Error('No free worktree port in 5200–5999.');
-  }
-  return settings;
+  return reservePort(root);
 }
 
 async function ready(state) {
@@ -168,11 +114,10 @@ async function stop(state) {
 }
 
 async function up() {
-  const settings = await setup();
+  const port = await setup();
   const previous = processState();
   if (ownsProcess(previous)) {
-    if (previous.port !== settings.port)
-      throw new Error('Port changed while running. Run down, then up.');
+    if (previous.port !== port) throw new Error('Port changed while running. Run down, then up.');
     if (!(await ready(previous)))
       throw new Error(`Managed server is not responding. See ${logPath}; run down, then up.`);
     console.log(`Already running: ${url(previous.port)}`);
@@ -184,14 +129,14 @@ async function up() {
       'Dependencies are missing. Run scripts/worktree-dev/bootstrap-worktree.sh first.',
     );
   }
-  if (!(await portAvailable(settings.port))) {
+  if (!(await portAvailable(port, host))) {
     throw new Error(
-      `Port ${settings.port} is occupied. Stop its owner, or remove .env.worktree and run setup to choose another port.`,
+      `Port ${port} is occupied. Stop its owner, or remove .env.worktree and run setup to choose another port.`,
     );
   }
   const token = randomUUID();
   const log = openSync(logPath, 'a', 0o600);
-  const child = spawn(process.execPath, [serverPath, token, String(settings.port)], {
+  const child = spawn(process.execPath, [serverPath, token, String(port)], {
     cwd: root,
     detached: true,
     stdio: ['ignore', log, log],
@@ -203,12 +148,12 @@ async function up() {
     child.once('error', reject);
   });
   child.unref();
-  const state = { pid: child.pid, token, port: settings.port };
+  const state = { pid: child.pid, token, port };
   try {
     atomicWrite(processPath, JSON.stringify(state, null, 2) + '\n');
     for (let i = 0; i < 100; i++) {
       if (await ready(state)) {
-        console.log(`Running: ${url(settings.port)}\nLog: ${logPath}`);
+        console.log(`Running: ${url(port)}\nLog: ${logPath}`);
         return;
       }
       if (!ownsProcess(state)) break;
@@ -233,10 +178,8 @@ async function main() {
   if (extra.length) throw new Error('Unexpected arguments. Use help for supported commands.');
   switch (command) {
     case 'setup': {
-      const settings = await setup();
-      console.log(
-        `Configured: ${url(settings.port)}\nEnvironment: ${envPath}\nRun up to start Vite.`,
-      );
+      const port = await setup();
+      console.log(`Configured: ${url(port)}\nEnvironment: ${envPath}\nRun up to start Vite.`);
       break;
     }
     case 'up':
@@ -253,13 +196,13 @@ async function main() {
       break;
     }
     case 'status': {
-      const settings = config();
+      const port = configuredPort(root);
       const state = processState();
       console.log(`Worktree: ${root}`);
       console.log(
         `State: ${(await ready(state)) ? 'running' : ownsProcess(state) ? 'unhealthy' : 'stopped'}`,
       );
-      console.log(`URL: ${settings ? url(settings.port) : 'not configured (run setup)'}`);
+      console.log(`URL: ${port ? url(port) : 'not configured (run setup)'}`);
       if (state && !ownsProcess(state))
         console.log(
           'Stale process state; up/down will clear it without stopping unrelated processes.',
