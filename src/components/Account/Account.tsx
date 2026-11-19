@@ -85,10 +85,11 @@ function AccountDialog({
     setError('');
     setBusy(true);
     try {
+      const callbackURL = window.location.origin + window.location.pathname;
       const result = await authClient.signIn.social({
         provider: 'google',
-        callbackURL: '/',
-        errorCallbackURL: '/?authError=google',
+        callbackURL,
+        errorCallbackURL: callbackURL + '?authError=google',
       });
       if (result.error) {
         setError(

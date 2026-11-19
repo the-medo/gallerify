@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { toNodeHandler } from 'better-auth/node';
+import { handleGalleries } from './galleries.ts';
+import { fromNodeHeaders, toNodeHandler } from 'better-auth/node';
 import { createAuth } from './auth.ts';
 import type { AuthConfig } from './config.ts';
 
@@ -12,7 +13,9 @@ export function createAuthMiddleware(config: AuthConfig) {
     },
     async handle(request: IncomingMessage, response: ServerResponse, next: () => void) {
       const pathname = request.url?.split('?')[0];
-      if (pathname !== '/api/auth' && !pathname?.startsWith('/api/auth/')) return next();
+      const galleries = pathname === '/api/galleries' || pathname?.startsWith('/api/galleries/');
+      if (!galleries && pathname !== '/api/auth' && !pathname?.startsWith('/api/auth/'))
+        return next();
       response.setHeader('Cache-Control', 'no-store');
       if (pathname === '/api/auth/providers' && request.method === 'GET') {
         response.setHeader('Content-Type', 'application/json');
@@ -23,12 +26,27 @@ export function createAuthMiddleware(config: AuthConfig) {
       // handling once its network topology is known.
       request.headers['x-gallerify-client-ip'] = request.socket.remoteAddress || '';
       try {
-        await handler(request, response);
+        if (galleries && pathname) {
+          const session = await auth.api.getSession({ headers: fromNodeHeaders(request.headers) });
+          if (!session) {
+            response.writeHead(401, { 'Content-Type': 'application/json' });
+            response.end(JSON.stringify({ message: 'Sign in to access your galleries.' }));
+            return;
+          }
+          await handleGalleries(
+            request,
+            response,
+            database,
+            session.user.id,
+            pathname,
+            config.baseURL,
+          );
+        } else await handler(request, response);
       } catch {
-        console.error('Authentication request failed.');
+        console.error('Account or gallery request failed.');
         if (!response.headersSent) {
           response.writeHead(500, { 'Content-Type': 'application/json' });
-          response.end(JSON.stringify({ message: 'Unable to complete the account request.' }));
+          response.end(JSON.stringify({ message: 'Unable to complete the request.' }));
         } else response.end();
       }
     },

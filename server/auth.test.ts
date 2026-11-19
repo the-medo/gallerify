@@ -271,3 +271,67 @@ test('configuration isolates local cookies/secrets and requires secure productio
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('gallery creation, saves and retries are private to the owner and survive a restart', async (t) => {
+  const app = await fixture();
+  t.after(() => app.close());
+  const owner = cookie(await app.request('/sign-up/email', user));
+  const other = cookie(
+    await app.request('/sign-up/email', { ...user, email: 'other@example.com' }),
+  );
+  const id = crypto.randomUUID();
+  const secondId = crypto.randomUUID();
+  const request = (session = owner, method = 'GET', path = '', body?: object, origin = app.url) =>
+    fetch(app.url + '/api/galleries' + path, {
+      method,
+      headers: { Cookie: session, Origin: origin, 'Content-Type': 'application/json' },
+      body: body && JSON.stringify(body),
+    });
+
+  assert.equal((await request('')).status, 401);
+  assert.equal((await request(owner, 'POST', '', { id }, 'https://other.example')).status, 403);
+  assert.equal((await request(owner, 'POST', '', { id })).status, 201);
+  assert.equal((await request(owner, 'POST', '', { id })).status, 200);
+  assert.equal((await request(owner, 'POST', '', { id: secondId })).status, 201);
+  const original = await (await request(owner, 'GET', '/' + id)).json();
+  const setup = structuredClone(original.setup);
+  setup.floorTextureId = '2';
+  setup.walls[0].textureId = '3';
+  setup.previewMode = '2d';
+  setup.generatorSettings.width += setup.generatorSettings.stepSize;
+  const update = { revision: original.revision, name: 'Winter collection', setup };
+  const save = (changes = update) => request(owner, 'PUT', '/' + id, changes);
+  assert.deepEqual(await (await request(other)).json(), []);
+  assert.equal((await request(other, 'GET', '/' + id)).status, 404);
+  assert.equal((await request(other, 'PUT', '/' + id, update)).status, 404);
+  assert.equal(
+    (
+      await save({
+        ...update,
+        setup: { ...setup, dimensions: { ...setup.dimensions, stepSize: 0 } },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await request(owner, 'PUT', '/' + id, update, 'https://other.example')).status,
+    403,
+  );
+  const saved = await (await save()).json();
+  assert.equal(saved.revision, 2);
+  assert.deepEqual(await (await save()).json(), saved);
+  assert.equal((await save({ ...update, name: 'Stale edit' })).status, 409);
+
+  await migrateAuth(app.config);
+  app.restart();
+  const reopened = await (await request(owner, 'GET', '/' + id)).json();
+  assert.equal(reopened.name, update.name);
+  assert.deepEqual(reopened.setup, setup);
+  assert.deepEqual(
+    (await (await request(owner, 'GET', '/' + secondId)).json()).setup,
+    original.setup,
+  );
+  const library = await (await request()).json();
+  assert.equal(library.length, 2);
+  assert.deepEqual(library[0], { id, name: update.name, updatedAt: saved.updatedAt });
+});

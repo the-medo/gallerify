@@ -10,13 +10,15 @@ Visitors can continue using the gallery builder without an account. The header
 offers account creation, sign-in, the signed-in user's name, and sign-out.
 Google sign-in creates an account on first use. Email/password registration
 requires a name, email, and a 12–128 character password, and signs the user in.
-This feature does not yet save gallery layouts to accounts.
+Signed-in users can create private galleries from **My galleries** on the homepage.
+Each gallery opens in its own workshop. **Save** writes the name and setup to SQLite.
+The workshop also saves changed setups every minute. The homepage canvas is a demo.
 
 ## Local development
 
 Run the regular bootstrap and `yarn dev:up`. Vite mounts the backend in the same
 process and port; no second server, Docker container, or external database is
-needed. Startup applies the Better Auth schema idempotently. `yarn dev` also
+needed. Startup applies the account and gallery schemas idempotently. `yarn dev` also
 works, at `http://localhost:5173`. Ports are strict because OAuth callbacks must
 match exactly. When browsing on the same machine, use the origin printed by the
 server; `localhost` and `127.0.0.1` are different origins. For remote browsers,
@@ -24,7 +26,7 @@ use the configured browser-facing origin described below.
 
 Each checkout defaults to these ignored local files:
 
-- `.gallerify/auth.sqlite` and its WAL/SHM sidecars: account and session data.
+- `.gallerify/auth.sqlite` and its WAL/SHM sidecars: accounts, sessions and saved galleries.
 - `.gallerify/auth-secret`: a generated secret, reused across server restarts.
 - `.env.local`: optional overrides and Google OAuth credentials.
 
@@ -34,7 +36,7 @@ auth secrets, databases, or whole env files between worktrees. `dev:down` preser
 accounts and configuration. At the user's request, bootstrap inherits only
 `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from the main checkout's `.env.local`
 if both local values are empty. Existing Google settings and other values are
-preserved. Each worktree's callback still needs registration on that shared client.
+preserved. Each preview reuses the Google callback registered for its port.
 
 `yarn auth:plan` prints schema changes; `yarn auth:migrate` applies them. Both use
 the installed Better Auth version and load `.env.local`. `yarn preview` serves
@@ -57,10 +59,11 @@ and [IAP API deprecation](https://docs.cloud.google.com/iap/docs/programmatic-oa
    and developer email addresses. Configure the audience/test users as needed.
 2. In [Clients](https://console.cloud.google.com/auth/clients?project=gallerify-the-medo),
    create a **Web application** client. Add the exact app origin followed by
-   `/api/auth/callback/google` to **Authorized redirect URIs**. For this worktree:
+   `/api/auth/callback/google` to **Authorized redirect URIs**. Register each of
+   the ten Steam preview callbacks once on the shared client. To print the list:
 
-   ```text
-   https://steamdeck.tail73a93e.ts.net:5281/api/auth/callback/google
+   ```bash
+   printf 'https://steamdeck.tail73a93e.ts.net:%s/api/auth/callback/google\n' {5281..5290}
    ```
 
    For a foreground dev server, also register
@@ -91,20 +94,14 @@ to take effect; wait for propagation before changing the app's callback.
 
 ### Remote browsers and forwarded ports
 
-The preferred browser address for this worktree is now
-**[https://steamdeck.tail73a93e.ts.net:5281/](https://steamdeck.tail73a93e.ts.net:5281/)**,
-available within the tailnet. Tailscale Serve forwards its HTTPS traffic to the
-loopback listener at `http://127.0.0.1:5281`. This worktree's `.env.local` sets
-`BETTER_AUTH_URL=https://steamdeck.tail73a93e.ts.net:5281`. Register this callback:
-
-```text
-https://steamdeck.tail73a93e.ts.net:5281/api/auth/callback/google
-```
-
-Vite permits the configured auth hostname explicitly. No public Funnel is
-enabled. `dev:down` stops the app but preserves the Serve mapping so `dev:up`
-keeps the same HTTPS URL. Before removing this worktree, inspect the mapping's
-target and remove only its route with `tailscale serve --https=5281 off`.
+Managed checkouts use `https://steamdeck.tail73a93e.ts.net:<port>` with their
+assigned port from 5281–5290. Tailscale Serve forwards HTTPS to
+`http://127.0.0.1:<port>`. Use the browser origin for `BETTER_AUTH_URL`.
+Vite allows its hostname. Keep the Serve mapping private to the tailnet.
+`dev:down` stops the app and retains its reservation. When retiring a checkout,
+verify its Serve target and remove that mapping with
+`tailscale serve --https=<port> off` before releasing the slot. The Google
+redirect entry stays available for the next checkout.
 
 The URL printed by `dev:status` is the listener on the development machine. A
 browser on another computer may reach it through a different forwarded URL.

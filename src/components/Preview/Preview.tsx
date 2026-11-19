@@ -8,7 +8,13 @@ import FloorTextureSelector from '../TextureSelector/FloorTextureSelector.tsx';
 import { PlayIcon } from '@radix-ui/react-icons';
 import GalleryWalk from '../Walking/GalleryWalk.tsx';
 
-export default function Preview() {
+export default function Preview({
+  showMaterials = true,
+  galleryName,
+}: {
+  showMaterials?: boolean;
+  galleryName?: string;
+}) {
   const previewMode = useStore((state) => state.previewMode);
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
@@ -73,11 +79,15 @@ export default function Preview() {
           </span>
         </div>
       </div>
-      <TextureSelector />
-      <FloorTextureSelector />
+      {showMaterials && (
+        <>
+          <TextureSelector />
+          <FloorTextureSelector />
+        </>
+      )}
       {walking && (
         <GalleryWalk
-          name={activePreset?.name ?? 'Your generated gallery'}
+          name={galleryName ?? activePreset?.name ?? 'Your generated gallery'}
           onExit={() => setWalking(false)}
         />
       )}
