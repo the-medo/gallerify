@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useStore } from '../../store/store.ts';
+import { gallerySetupFrom, useStore } from '../../store/store.ts';
 import Preview2d from './Preview2d.tsx';
 import Preview3d from './Preview3d.tsx';
 import TextureSelector from '../TextureSelector/TextureSelector.tsx';
@@ -7,6 +7,12 @@ import { galleryPresets } from '../../presets/galleryPresets.ts';
 import FloorTextureSelector from '../TextureSelector/FloorTextureSelector.tsx';
 import { PlayIcon } from '@radix-ui/react-icons';
 import GalleryWalk from '../Walking/GalleryWalk.tsx';
+
+function EditorWalk({ name, onExit }: { name: string; onExit: () => void }) {
+  const [setup] = useState(() => gallerySetupFrom(useStore.getState()));
+  const artworks = useStore((state) => state.artworks);
+  return <GalleryWalk name={name} setup={setup} artworks={artworks} onExit={onExit} />;
+}
 
 export default function Preview({
   showMaterials = true,
@@ -86,7 +92,7 @@ export default function Preview({
         </>
       )}
       {walking && (
-        <GalleryWalk
+        <EditorWalk
           name={galleryName ?? activePreset?.name ?? 'Your generated gallery'}
           onExit={() => setWalking(false)}
         />

@@ -1,5 +1,7 @@
 import type { GallerySetup, GallerySummary, SavedGallery } from './gallery.ts';
 
+import type { ExhibitionDetails, PublicationStatus } from './publication.ts';
+
 export class GalleryRequestError extends Error {
   readonly status: number;
   constructor(status: number, message: string) {
@@ -25,6 +27,15 @@ function json(method: string, body: unknown): RequestInit {
 }
 
 export const galleries = {
+  publication: (id: string, signal?: AbortSignal) =>
+    request<PublicationStatus>(`/${id}/publication`, { signal }),
+  publish: (id: string, revision: number, generation: number, details: ExhibitionDetails) =>
+    request<PublicationStatus>(
+      `/${id}/publication`,
+      json('PUT', { revision, generation, details }),
+    ),
+  unpublish: (id: string, generation: number) =>
+    request<PublicationStatus>(`/${id}/publication`, json('DELETE', { generation })),
   list: (signal: AbortSignal) => request<GallerySummary[]>('', { signal }),
   create: (id: string) => request<{ id: string }>('', json('POST', { id })),
   get: (id: string, signal: AbortSignal) => request<SavedGallery>('/' + id, { signal }),

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { useStore } from '../../store/store.ts';
+import type { ExhibitionScene } from '../../lib/publication.ts';
 import {
   createWalkSpace,
   EYE_HEIGHT,
@@ -27,11 +27,13 @@ const movementKeys = new Set([
 ]);
 
 export default function WalkingCamera({
+  setup,
   input,
   restart,
   onReady,
   enabled = true,
 }: {
+  setup: ExhibitionScene;
   input: WalkInput;
   restart: number;
   onReady: () => void;
@@ -39,11 +41,14 @@ export default function WalkingCamera({
 }) {
   const camera = useThree((state) => state.camera);
   const canvas = useThree((state) => state.gl.domElement);
-  const walls = useStore((state) => state.walls);
-  const width = useStore((state) => state.width);
-  const height = useStore((state) => state.height);
-  const stepSize = useStore((state) => state.stepSize);
-  const space = useMemo(() => createWalkSpace(walls, width, height), [walls, width, height]);
+  const {
+    walls,
+    dimensions: { width, height, stepSize },
+  } = setup;
+  const space = useMemo(
+    () => createWalkSpace(Object.fromEntries(walls.map((wall) => [wall.id, wall])), width, height),
+    [walls, width, height],
+  );
   const keys = useRef(new Set<string>());
   const look = useRef({ yaw: 0, pitch: 0 });
 

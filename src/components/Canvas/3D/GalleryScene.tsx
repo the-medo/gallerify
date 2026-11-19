@@ -1,21 +1,23 @@
 import { useMemo } from 'react';
 import type { ThreeEvent } from '@react-three/fiber';
-import type { GallerySetup } from '../../../lib/gallery.ts';
-import type { Artwork } from '../../../lib/artwork.ts';
+import type { ExhibitionScene } from '../../../lib/publication.ts';
+import type { DisplayArtwork } from '../../../lib/artwork.ts';
 import Base3d from './Base3d.tsx';
 import Wall3d from './Wall3d.tsx';
 import ArtworkMesh from './ArtworkMesh.tsx';
 
 export default function GalleryScene({
   setup,
+  slug,
   artworks,
   selectedWallIds = {},
   selectedPlacementId,
   onWallClick,
   onArtworkClick,
 }: {
-  setup: GallerySetup;
-  artworks: Record<string, Artwork>;
+  slug?: string;
+  setup: ExhibitionScene;
+  artworks: Record<string, DisplayArtwork>;
   selectedWallIds?: Record<string, true | undefined>;
   selectedPlacementId?: string | null;
   onWallClick?: (id: string, event: ThreeEvent<MouseEvent>) => void;
@@ -44,6 +46,7 @@ export default function GalleryScene({
         (placement) =>
           walls[placement.wallId] && (
             <ArtworkMesh
+              slug={slug}
               key={placement.id}
               artwork={artworks[placement.artworkId]}
               placement={placement}

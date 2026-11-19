@@ -101,6 +101,7 @@ export function useGallerySave(gallery: SavedGallery) {
     error,
     save,
     hasChanges,
+    savedRevision: () => saved.current.revision,
     rename(value: string) {
       currentName.current = value;
       setName(value);

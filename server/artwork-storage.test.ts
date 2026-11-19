@@ -46,7 +46,10 @@ test('S3 adapter uses private keys and implements write, read, and cleanup witho
     'send',
     async (command: { constructor: { name: string }; input: Record<string, unknown> }) => {
       commands.push({ name: command.constructor.name, input: command.input });
-      return { Body: { transformToByteArray: async () => Buffer.from('private-image') } };
+      return {
+        ContentLength: 13,
+        Body: { transformToByteArray: async () => Buffer.from('private-image') },
+      };
     },
   );
   const storage = createArtworkStorage({
@@ -62,11 +65,12 @@ test('S3 adapter uses private keys and implements write, read, and cleanup witho
   t.after(() => storage.close());
   const key = `artist/${crypto.randomUUID()}/${crypto.randomUUID()}/scene`;
   await storage.put(key, Buffer.from('private-image'), 'image/webp');
+  await storage.check(key);
   assert.equal((await storage.get(key)).toString(), 'private-image');
   await storage.remove(key);
   assert.deepEqual(
     commands.map((item) => item.name),
-    ['PutObjectCommand', 'GetObjectCommand', 'DeleteObjectCommand'],
+    ['PutObjectCommand', 'HeadObjectCommand', 'GetObjectCommand', 'DeleteObjectCommand'],
   );
   for (const { input } of commands) {
     assert.equal(input.Bucket, 'private-test-bucket');

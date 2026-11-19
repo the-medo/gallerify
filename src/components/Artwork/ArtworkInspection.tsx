@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { artworkMediaUrl, type Artwork } from '../../lib/artwork.ts';
+import { artworkMediaUrl, type DisplayArtwork } from '../../lib/artwork.ts';
 import './artwork.css';
 
 export default function ArtworkInspection({
   artwork,
+  slug,
   onClose,
 }: {
-  artwork: Artwork;
+  slug?: string;
+  artwork: DisplayArtwork;
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -57,7 +59,7 @@ export default function ArtworkInspection({
         ) : (
           <img
             key={attempt}
-            src={artworkMediaUrl(artwork, 'inspection') + `?retry=${attempt}`}
+            src={artworkMediaUrl(artwork, 'inspection', slug) + `?retry=${attempt}`}
             alt={artwork.title}
             style={{
               width: `${zoom * 100}%`,

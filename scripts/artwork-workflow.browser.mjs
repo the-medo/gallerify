@@ -24,7 +24,9 @@ process.env.ARTWORK_S3_BUCKET = '';
 process.env.ARTWORK_S3_ENDPOINT = '';
 process.env.ARTWORK_S3_ACCESS_KEY_ID = '';
 process.env.ARTWORK_S3_SECRET_ACCESS_KEY = '';
+const cacheDir = resolve('node_modules/.cache/gallery-browser-' + port);
 const server = await createServer({
+  cacheDir,
   server: { port, host: '127.0.0.1', strictPort: true },
   logLevel: 'error',
 });
@@ -37,6 +39,9 @@ try {
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage'],
   });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await context.addInitScript((cachePath) => {
+    window.galleryTestFiber = () => import(cachePath + '/deps/@react-three_fiber.js');
+  }, '/node_modules/.cache/gallery-browser-' + port);
   const signup = await context.request.post(origin + '/api/auth/sign-up/email', {
     headers: { Origin: origin },
     data: {
@@ -119,7 +124,7 @@ try {
   await page.reload();
   await expect(page.getByText('1 on walls', { exact: true })).toHaveCount(10);
   await page.waitForFunction(async () => {
-    const { _roots } = await import('/node_modules/.vite/deps/@react-three_fiber.js');
+    const { _roots } = await window.galleryTestFiber();
     const root = _roots.get(document.querySelector('canvas'))?.store.getState();
     const scene = root?.scene;
     let count = 0;
@@ -132,9 +137,13 @@ try {
     () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
   );
   console.log('Placed ten works, saved, and restored them after reload.');
+  if (process.argv.includes('--publication')) {
+    const { verifyPublication } = await import('./publication.browser.mjs');
+    await verifyPublication({ browser, page, context, origin });
+  }
   const wallTarget = async () => {
     return page.evaluate(async () => {
-      const { _roots } = await import('/node_modules/.vite/deps/@react-three_fiber.js');
+      const { _roots } = await window.galleryTestFiber();
       const { useStore } = await import('/src/store/store.ts');
       const { placementAtPoint, placementIssue } = await import('/src/utils/artworkGeometry.ts');
       const { artworkDisplaySize } = await import('/src/lib/artwork.ts');
@@ -185,7 +194,7 @@ try {
   await page.getByRole('button', { name: 'Remove from wall', exact: true }).click();
   await page.mouse.move(40, 40);
   await page.waitForFunction(async () => {
-    const { _roots } = await import('/node_modules/.vite/deps/@react-three_fiber.js');
+    const { _roots } = await window.galleryTestFiber();
     return _roots.get(document.querySelector('canvas'))?.store.getState().gl.info.render.calls > 20;
   });
   await page.screenshot({ path: resolve('logs/artwork-editor.png') });
@@ -195,7 +204,7 @@ try {
     timeout: 20000,
   });
   await page.waitForFunction(async () => {
-    const { _roots } = await import('/node_modules/.vite/deps/@react-three_fiber.js');
+    const { _roots } = await window.galleryTestFiber();
     const root = _roots.get(document.querySelector('.walk-scene canvas'))?.store.getState();
     let loaded = 0;
     root?.scene.traverse((object) => {
@@ -204,7 +213,7 @@ try {
     return loaded === 10;
   });
   const walkTarget = await page.evaluate(async () => {
-    const { _roots } = await import('/node_modules/.vite/deps/@react-three_fiber.js');
+    const { _roots } = await window.galleryTestFiber();
     const canvas = document.querySelector('.walk-scene canvas');
     const root = _roots.get(canvas).store.getState();
     const rect = canvas.getBoundingClientRect();
@@ -224,7 +233,7 @@ try {
   await page.locator('.walk-scene canvas').click({ position: walkTarget });
   await expect(page.getByRole('button', { name: 'Close artwork', exact: true })).toBeVisible();
   const cameraBefore = await page.evaluate(async () => {
-    const { _roots } = await import('/node_modules/.vite/deps/@react-three_fiber.js');
+    const { _roots } = await window.galleryTestFiber();
     return _roots
       .get(document.querySelector('.walk-scene canvas'))
       .store.getState()
@@ -236,7 +245,7 @@ try {
   );
   await page.keyboard.up('w');
   const cameraDuring = await page.evaluate(async () => {
-    const { _roots } = await import('/node_modules/.vite/deps/@react-three_fiber.js');
+    const { _roots } = await window.galleryTestFiber();
     return _roots
       .get(document.querySelector('.walk-scene canvas'))
       .store.getState()
@@ -334,5 +343,6 @@ try {
 } finally {
   await browser?.close();
   await server.close();
+  await rm(cacheDir, { recursive: true, force: true });
   await rm(temporary, { recursive: true, force: true });
 }

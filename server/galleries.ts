@@ -82,12 +82,14 @@ const update = z.object({
     ),
 });
 
-function json(response: ServerResponse, status: number, value: unknown) {
+export const gallerySetupSchema = update.shape.setup;
+
+export function json(response: ServerResponse, status: number, value: unknown) {
   response.writeHead(status, { 'Content-Type': 'application/json' });
   response.end(JSON.stringify(value));
 }
 
-async function readBody(request: IncomingMessage, response: ServerResponse) {
+export async function readBody(request: IncomingMessage, response: ServerResponse) {
   if (request.headers['content-type']?.split(';')[0] !== 'application/json') {
     json(response, 415, { message: 'Expected a JSON request.' });
     return;

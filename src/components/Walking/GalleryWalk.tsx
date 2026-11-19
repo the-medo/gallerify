@@ -1,7 +1,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { Canvas, events } from '@react-three/fiber';
 import { Cross2Icon, ResetIcon } from '@radix-ui/react-icons';
-import { gallerySetupFrom, useStore } from '../../store/store.ts';
+import type { ExhibitionScene } from '../../lib/publication.ts';
+import type { DisplayArtwork } from '../../lib/artwork.ts';
 import GalleryScene from '../Canvas/3D/GalleryScene.tsx';
 import ArtworkInspection from '../Artwork/ArtworkInspection.tsx';
 import WalkingCamera from './WalkingCamera.tsx';
@@ -15,13 +16,23 @@ const directions: { direction: WalkDirection; label: string; symbol: string }[] 
   { direction: 'right', label: 'Walk right', symbol: '→' },
 ];
 
-export default function GalleryWalk({ name, onExit }: { name: string; onExit: () => void }) {
+export default function GalleryWalk({
+  name,
+  setup,
+  artworks,
+  slug,
+  onExit,
+}: {
+  name: string;
+  setup: ExhibitionScene;
+  artworks: Record<string, DisplayArtwork>;
+  slug?: string;
+  onExit: () => void;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   const exitButton = useRef<HTMLButtonElement>(null);
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const input = useRef(new Set<WalkDirection>());
-  const setup = useStore(gallerySetupFrom);
-  const artworks = useStore((state) => state.artworks);
   const [inspectedId, setInspectedId] = useState<string | null>(null);
   const inspected = inspectedId ? artworks[inspectedId] : undefined;
   const [restart, setRestart] = useState(0);
@@ -100,6 +111,7 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
           <directionalLight position={[4, 8, 3]} intensity={1.2} />
           <Suspense fallback={null}>
             <GalleryScene
+              slug={slug}
               setup={setup}
               artworks={artworks}
               onArtworkClick={(id) => {
@@ -107,7 +119,13 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
                 if (placement) setInspectedId(placement.artworkId);
               }}
             />
-            <WalkingCamera input={input} restart={restart} onReady={onReady} enabled={!inspected} />
+            <WalkingCamera
+              setup={setup}
+              input={input}
+              restart={restart}
+              onReady={onReady}
+              enabled={!inspected}
+            />
           </Suspense>
         </Canvas>
       </div>
@@ -116,7 +134,7 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
         <div className="walk-title">
           <span className="status-dot" />
           <div>
-            <span className="walk-eyebrow">Inside your gallery</span>
+            <span className="walk-eyebrow">{slug ? 'Exhibition' : 'Inside your gallery'}</span>
             <h2 id="walk-title">{name}</h2>
           </div>
         </div>
@@ -151,7 +169,7 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
 
       {!ready && (
         <div className="walk-loading" role="status">
-          Opening your gallery…
+          Opening gallery…
         </div>
       )}
       {ready && <div className="walk-crosshair" aria-hidden="true" />}
@@ -197,6 +215,7 @@ export default function GalleryWalk({ name, onExit }: { name: string; onExit: ()
       </div>
       {inspected && (
         <ArtworkInspection
+          slug={slug}
           key={inspected.id}
           artwork={inspected}
           onClose={() => setInspectedId(null)}

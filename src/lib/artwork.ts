@@ -1,4 +1,4 @@
-export type Artwork = {
+export type DisplayArtwork = {
   id: string;
   title: string;
   description: string;
@@ -9,6 +9,9 @@ export type Artwork = {
   pixelWidth: number;
   pixelHeight: number;
   mediaVersion: string;
+};
+
+export type Artwork = DisplayArtwork & {
   bytes: number;
   createdAt: number;
 };
@@ -32,8 +35,10 @@ export type ArtworkPlacement = {
 };
 
 export type MediaVariant = 'thumbnail' | 'scene' | 'inspection';
-export const artworkMediaUrl = (artwork: Artwork, variant: MediaVariant) =>
-  `/api/artworks/${artwork.id}/media/${artwork.mediaVersion}/${variant}`;
+export const artworkMediaUrl = (artwork: DisplayArtwork, variant: MediaVariant, slug?: string) =>
+  slug
+    ? `/api/exhibitions/${slug}/media/${artwork.id}/${artwork.mediaVersion}/${variant}`
+    : `/api/artworks/${artwork.id}/media/${artwork.mediaVersion}/${variant}`;
 
 export function artworkDisplaySize(artwork: Artwork) {
   const ratio = artwork.pixelWidth / artwork.pixelHeight;

@@ -18,6 +18,7 @@
     "test:presets": "node --test scripts/gallery-presets.test.mjs",
     "test:walking": "node --test scripts/gallery-walking.test.mjs",
     "test:artwork:browser": "node scripts/artwork-workflow.browser.mjs",
+    "test:publish:browser": "yarn build && node scripts/artwork-workflow.browser.mjs --publication",
     "build": "tsc && tsc -p tsconfig.node.json && vite build",
     "lint": "eslint . --ext ts,tsx,mjs --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
