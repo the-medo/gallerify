@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, rename, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -327,4 +327,140 @@ test('old gallery documents gain an empty placements collection without losing f
   assert.equal(result.setup.schemaVersion, 2);
   assert.deepEqual(result.setup.placements, []);
   assert.equal(result.setup.floorTextureId, '3');
+});
+
+test('publication switches a complete snapshot, scopes visitor media and revokes the stable link', async (t) => {
+  const app = await fixture();
+  t.after(() => app.close());
+  const galleryId = crypto.randomUUID();
+  const path = '/api/galleries/' + galleryId;
+  const ownerPath = path + '/publication';
+  const details = {
+    title: 'Studies in light',
+    introduction: 'An evening exhibition.',
+    artist: 'Artist',
+    bio: '',
+    contact: '',
+    visibility: 'unlisted',
+  };
+  const publish = (revision: number, generation: number, settings = details) =>
+    app.request(ownerPath, 'PUT', { revision, generation, details: settings }, app.owner);
+  await app.request('/api/galleries', 'POST', { id: galleryId }, app.owner);
+  assert.equal((await app.request(ownerPath)).status, 401);
+  assert.equal((await app.request(ownerPath, 'GET', undefined, app.other)).status, 404);
+  assert.equal((await publish(1, 0)).status, 409);
+  const art = await (await app.upload()).json();
+  const privateArt = await (await app.upload()).json();
+  const setup = defaultGallerySetup();
+  const wall = setup.walls.find((w) => w.line.start.y === 0 && w.line.end.y === 0)!;
+  setup.placements.push({
+    id: crypto.randomUUID(),
+    artworkId: art.id,
+    wallId: wall.id,
+    side: 1,
+    u: 1,
+    elevation: 1.3,
+    width: 0.6,
+    height: 0.4,
+  });
+  const save = (revision: number) =>
+    app.request(path, 'PUT', { revision, name: 'Private draft', setup }, app.owner);
+  assert.equal((await save(1)).status, 200);
+  assert.equal(
+    (await app.request(ownerPath, 'PUT', { revision: 2, generation: 0, details }, app.other))
+      .status,
+    404,
+  );
+  assert.equal(
+    (
+      await app.request(ownerPath, 'PUT', { revision: 2, generation: 0, details }, app.owner, {
+        Origin: 'https://other.example',
+      })
+    ).status,
+    403,
+  );
+  assert.equal((await publish(1, 0)).status, 409);
+  assert.equal((await publish(2, 0, { ...details, contact: 'data:text/html,hello' })).status, 400);
+  const attempts = await Promise.all([publish(2, 0), publish(2, 0)]);
+  assert.deepEqual(
+    attempts.map((r) => r.status),
+    [200, 200],
+  );
+  const [first, retry] = await Promise.all(attempts.map((r) => r.json()));
+  assert.deepEqual(first, retry);
+  const publicPath = '/api/exhibitions/' + first.slug;
+  const visitor = async () => (await app.request(publicPath)).json();
+  const live = await visitor();
+  assert.deepEqual(live, first.live);
+  assert.equal(live.artworks.length, 1);
+  assert.equal(live.artworks[0].id, art.id);
+  for (const key of [
+    'bytes',
+    'createdAt',
+    'ownerId',
+    'email',
+    'previewMode',
+    'generatorSettings',
+    'activePresetId',
+    'Private draft',
+    privateArt.id,
+  ])
+    assert.ok(!JSON.stringify(live).includes(key), key);
+  const media = publicPath + '/media/' + art.id + '/' + art.mediaVersion + '/inspection';
+  for (const probe of [
+    media.replace('inspection', 'original'),
+    media.replace(art.id, privateArt.id),
+    media.replace(art.mediaVersion, crypto.randomUUID()),
+  ])
+    assert.equal((await app.request(probe)).status, 404);
+  const response = await app.request(media);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const cover = await app.request(publicPath + '/cover');
+  const dimensions = await sharp(Buffer.from(await cover.arrayBuffer())).metadata();
+  assert.deepEqual([dimensions.width, dimensions.height], [1200, 630]);
+  const changedArt = { ...art, title: 'New private title' };
+  assert.equal(
+    (await app.request('/api/artworks/' + art.id, 'PATCH', changedArt, app.owner)).status,
+    200,
+  );
+  assert.deepEqual(await visitor(), live);
+
+  const directory = app.config.artworkStorage.directory;
+  const [ownerDir] = await readdir(directory);
+  const imagePath = join(directory, ownerDir, art.id, art.mediaVersion, 'inspection');
+  await rename(imagePath, imagePath + '.missing');
+  assert.equal((await publish(2, first.generation)).status, 503);
+  assert.deepEqual(await visitor(), live);
+  await rename(imagePath + '.missing', imagePath);
+  const second = await (
+    await publish(2, first.generation, { ...details, visibility: 'public' })
+  ).json();
+  assert.equal(second.slug, first.slug);
+  assert.equal(second.generation, first.generation + 1);
+  assert.equal((await visitor()).artworks[0].title, changedArt.title);
+  assert.equal((await app.request(publicPath)).headers.get('x-robots-tag'), null);
+  const hide = (generation: number) => app.request(ownerPath, 'DELETE', { generation }, app.owner);
+  assert.equal((await hide(first.generation)).status, 409);
+  assert.equal((await publish(2, first.generation)).status, 409);
+  const originalPlacements = setup.placements;
+  setup.placements = [];
+  assert.equal((await save(2)).status, 200);
+  assert.equal(
+    (await app.request('/api/artworks/' + art.id, 'DELETE', undefined, app.owner)).status,
+    409,
+  );
+  const hidden = await (await hide(second.generation)).json();
+  assert.deepEqual(await (await hide(second.generation)).json(), hidden);
+  assert.equal(hidden.live, null);
+  for (const probe of [publicPath, media, publicPath + '/cover'])
+    assert.equal((await app.request(probe)).status, 404);
+  setup.placements = originalPlacements;
+  assert.equal((await save(3)).status, 200);
+  assert.equal((await publish(4, second.generation)).status, 409);
+  const restored = await (await publish(4, hidden.generation)).json();
+  assert.equal(restored.slug, first.slug);
+  assert.equal((await app.request(media)).status, 200);
+  app.restart();
+  assert.deepEqual(await visitor(), restored.live);
 });

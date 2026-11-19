@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { handleExhibition, handlePublication, ownerPublicationPath } from './publications.ts';
 import { handleGalleries } from './galleries.ts';
 import { fromNodeHeaders, toNodeHandler } from 'better-auth/node';
 import { createAuth } from './auth.ts';
@@ -6,7 +8,10 @@ import type { AuthConfig } from './config.ts';
 import { createArtworkStorage } from './artwork-storage.ts';
 import { createArtworkHandler } from './artworks.ts';
 
-export function createAuthMiddleware(config: AuthConfig) {
+export function createAuthMiddleware(
+  config: AuthConfig,
+  indexHtml: (url: string) => Promise<string> = () => readFile('dist/index.html', 'utf8'),
+) {
   const { auth, database } = createAuth(config);
   const handler = toNodeHandler(auth);
   const artworkStorage = createArtworkStorage(config.artworkStorage);
@@ -20,7 +25,9 @@ export function createAuthMiddleware(config: AuthConfig) {
       const pathname = request.url?.split('?')[0];
       const galleries = pathname === '/api/galleries' || pathname?.startsWith('/api/galleries/');
       const artworks = pathname === '/api/artworks' || pathname?.startsWith('/api/artworks/');
+      const exhibition = pathname?.startsWith('/g/') || pathname?.startsWith('/api/exhibitions/');
       if (
+        !exhibition &&
         !galleries &&
         !artworks &&
         pathname !== '/api/auth' &&
@@ -37,11 +44,36 @@ export function createAuthMiddleware(config: AuthConfig) {
       // handling once its network topology is known.
       request.headers['x-gallerify-client-ip'] = request.socket.remoteAddress || '';
       try {
+        if (exhibition && pathname) {
+          await handleExhibition(
+            request,
+            response,
+            database,
+            artworkStorage,
+            pathname,
+            config.baseURL,
+            indexHtml,
+          );
+          return;
+        }
         if ((galleries || artworks) && pathname) {
           const session = await auth.api.getSession({ headers: fromNodeHeaders(request.headers) });
           if (!session) {
             response.writeHead(401, { 'Content-Type': 'application/json' });
             response.end(JSON.stringify({ message: 'Sign in to access your galleries.' }));
+            return;
+          }
+          const publication = ownerPublicationPath.exec(pathname);
+          if (publication) {
+            await handlePublication(
+              request,
+              response,
+              database,
+              artworkStorage,
+              session.user.id,
+              publication[1],
+              config.baseURL,
+            );
             return;
           }
           await (artworks

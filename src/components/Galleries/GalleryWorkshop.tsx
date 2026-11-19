@@ -12,11 +12,13 @@ import FloorTextureSelector from '../TextureSelector/FloorTextureSelector.tsx';
 import TextureSelector from '../TextureSelector/TextureSelector.tsx';
 import Account from '../Account/Account.tsx';
 import './galleries.css';
+import PublishPanel from './PublishPanel.tsx';
 import ArtworkPanel from '../Artwork/ArtworkPanel.tsx';
 
 function Editor({ gallery }: { gallery: SavedGallery }) {
-  const { name, rename, dirty, saving, error, save, hasChanges } = useGallerySave(gallery);
-  const [panel, setPanel] = useState<'Layout' | 'Art' | 'Finishes'>('Art');
+  const { name, rename, dirty, saving, error, save, hasChanges, savedRevision } =
+    useGallerySave(gallery);
+  const [panel, setPanel] = useState<'Layout' | 'Art' | 'Finishes' | 'Share'>('Art');
   const selectedPlacementId = useStore((state) => state.selectedPlacementId);
   useEffect(() => {
     if (selectedPlacementId) setPanel('Art');
@@ -87,7 +89,7 @@ function Editor({ gallery }: { gallery: SavedGallery }) {
         <Preview showMaterials={false} galleryName={name} />
         <aside className="workshop-inspector" aria-label="Gallery controls">
           <div className="inspector-switch" role="group" aria-label="Workshop controls">
-            {(['Layout', 'Art', 'Finishes'] as const).map((item) => (
+            {(['Layout', 'Art', 'Finishes', 'Share'] as const).map((item) => (
               <button
                 type="button"
                 key={item}
@@ -97,6 +99,14 @@ function Editor({ gallery }: { gallery: SavedGallery }) {
                 {item}
               </button>
             ))}
+          </div>
+          <div hidden={panel !== 'Share'}>
+            <PublishPanel
+              visible={panel === 'Share'}
+              id={gallery.id}
+              name={name}
+              prepare={async () => ((await save()) && !hasChanges() ? savedRevision() : null)}
+            />
           </div>
           <div hidden={panel !== 'Art'}>
             <ArtworkPanel />

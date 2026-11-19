@@ -1,8 +1,9 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -63,6 +64,7 @@ export function readArtworkStorageConfig(
 
 export interface ArtworkStorage {
   put(key: string, bytes: Buffer, contentType: string): Promise<void>;
+  check(key: string): Promise<void>;
   get(key: string): Promise<Buffer>;
   remove(key: string): Promise<void>;
   close(): void;
@@ -96,6 +98,12 @@ export function createArtworkStorage(config: ArtworkStorageConfig): ArtworkStora
           }),
         );
       },
+      async check(key) {
+        const metadata = await client.send(
+          new HeadObjectCommand({ Bucket: bucket, Key: checkedKey(key) }),
+        );
+        if (!metadata.ContentLength) throw new Error('Artwork media is empty.');
+      },
       async get(key) {
         const object = await client.send(
           new GetObjectCommand({ Bucket: bucket, Key: checkedKey(key) }),
@@ -117,6 +125,10 @@ export function createArtworkStorage(config: ArtworkStorageConfig): ArtworkStora
       const file = path(key);
       await mkdir(dirname(file), { recursive: true, mode: 0o700 });
       await writeFile(file, bytes, { mode: 0o600 });
+    },
+    async check(key) {
+      const file = await stat(path(key));
+      if (!file.isFile() || file.size === 0) throw new Error('Artwork media is empty.');
     },
     get(key) {
       return readFile(path(key));

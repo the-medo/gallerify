@@ -33,7 +33,7 @@ const detailsSchema = z.object({
 });
 const variants = ['original', 'thumbnail', 'scene', 'inspection'] as const;
 type Row = Record<string, SQLOutputValue>;
-const artworkFrom = (row: Row): Artwork => ({
+export const artworkFrom = (row: Row): Artwork => ({
   id: String(row.id),
   ...JSON.parse(String(row.details)),
   pixelWidth: Number(row.pixelWidth),
@@ -42,7 +42,7 @@ const artworkFrom = (row: Row): Artwork => ({
   bytes: Number(row.bytes),
   createdAt: Number(row.createdAt),
 });
-const mediaKey = (owner: string, id: string, version: string, variant: string) =>
+export const mediaKey = (owner: string, id: string, version: string, variant: string) =>
   `${owner}/${id}/${version}/${variant}`;
 const json = (res: ServerResponse, status: number, value: unknown) => {
   res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -307,6 +307,21 @@ export function createArtworkHandler(database: DatabaseSync, storage: ArtworkSto
           return json(response, 409, {
             message:
               'This artwork is used in a saved gallery. Remove its placements and save that gallery first.',
+          });
+        }
+        const exhibited = database
+          .prepare(
+            `SELECT 1 FROM publication p
+          JOIN exhibitionVersion v ON v.galleryId = p.galleryId AND v.generation = p.generation
+          JOIN gallery g ON g.id = p.galleryId, json_each(v.snapshot,'$.artworks') a
+          WHERE g.ownerId = ? AND json_extract(a.value,'$.id') = ? LIMIT 1`,
+          )
+          .get(owner, id);
+        if (exhibited) {
+          database.exec('ROLLBACK');
+          return json(response, 409, {
+            message:
+              'This artwork is in a live exhibition. Publish the updated gallery or unpublish it before deleting the artwork.',
           });
         }
         database.prepare('DELETE FROM artwork WHERE id = ? AND ownerId = ?').run(id, owner);

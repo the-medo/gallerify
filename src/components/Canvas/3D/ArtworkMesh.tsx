@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
 import { SRGBColorSpace, Texture, TextureLoader } from 'three';
-import { artworkMediaUrl, type Artwork, type ArtworkPlacement } from '../../../lib/artwork.ts';
+import {
+  artworkMediaUrl,
+  type DisplayArtwork,
+  type ArtworkPlacement,
+} from '../../../lib/artwork.ts';
 import type { TWall } from '../../../utils/types.ts';
 import { placementTransform } from '../../../utils/artworkGeometry.ts';
 
 export default function ArtworkMesh({
   artwork,
+  slug,
   placement,
   wall,
   width,
@@ -13,7 +18,8 @@ export default function ArtworkMesh({
   selected,
   onSelect,
 }: {
-  artwork?: Artwork;
+  slug?: string;
+  artwork?: DisplayArtwork;
   placement: ArtworkPlacement;
   wall: TWall;
   width: number;
@@ -22,7 +28,7 @@ export default function ArtworkMesh({
   onSelect?: () => void;
 }) {
   const [texture, setTexture] = useState<Texture | null>(null);
-  const url = artwork ? artworkMediaUrl(artwork, 'scene') : '';
+  const url = artwork ? artworkMediaUrl(artwork, 'scene', slug) : '';
   useEffect(() => {
     setTexture(null);
     if (!url) return;

@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { loadEnv, type Plugin } from 'vite';
 import { basename, dirname, resolve } from 'node:path';
 import { migrateAuth } from './auth.ts';
@@ -48,7 +49,9 @@ export function authPlugin(): Plugin {
         developmentURL: `http://${host}:${server.config.server.port || 5173}`,
       });
       await migrateAuth(config);
-      const middleware = createAuthMiddleware(config);
+      const middleware = createAuthMiddleware(config, async (url) =>
+        server.transformIndexHtml(url, await readFile(resolve(root, 'index.html'), 'utf8')),
+      );
       server.middlewares.use((req, res, next) => {
         void middleware.handle(req, res, next);
       });
@@ -64,7 +67,9 @@ export function authPlugin(): Plugin {
           developmentURL: `http://localhost:${server.config.preview.port || 4173}`,
         },
       );
-      const middleware = createAuthMiddleware(config);
+      const middleware = createAuthMiddleware(config, () =>
+        readFile(resolve(root, server.config.build.outDir, 'index.html'), 'utf8'),
+      );
       server.middlewares.use((req, res, next) => {
         void middleware.handle(req, res, next);
       });
